@@ -33,3 +33,4 @@ c:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Debug\net9.0\refint
 c:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Debug\net9.0\AutomationApp.pdb
 c:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Debug\net9.0\AutomationApp.genruntimeconfig.cache
 c:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Debug\net9.0\ref\AutomationApp.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\EmailSettings.json

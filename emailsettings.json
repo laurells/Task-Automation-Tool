@@ -1,0 +1,10 @@
+{
+    "SmtpHost": "smtp.example.com",
+    "SmtpPort": 587,
+    "UseSmtpSsl": true,
+    "Email": "your-email@example.com",
+    "Password": "your-password",
+    "ImapHost": "imap.example.com",
+    "ImapPort": 993,
+    "UseImapSsl": true
+}

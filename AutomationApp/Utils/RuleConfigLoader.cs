@@ -1,18 +1,32 @@
 using AutomationApp.Services;
 using System.Text.Json;
 namespace AutomationApp.Utils;
+using AutomationApp.Rules;
 
 public static class RuleConfigLoader
 {
     public static AutomationEngine LoadRules()
     {
-        var engine = new AutomationEngine();
+        var logger = new Logger("RuleConfigLoader"); // Provide a category name for the Logger
+        var engine = new AutomationEngine(logger);
         var config = Helpers.LoadEmailConfig();
         var json = File.ReadAllText("config.rules.json");
         var rawRules = JsonSerializer.Deserialize<List<JsonElement>>(json);
 
-        var fileService = new FileService();
-        var emailService = new EmailService();
+        var fileService = new FileService(logger);
+
+        // Convert EmailConfig to EmailConfiguration if necessary
+        var emailConfiguration = new AutomationApp.Models.EmailConfiguration
+        {
+            // Map properties from config (EmailConfig) to emailConfiguration (EmailConfiguration)
+            // Example:
+            // SmtpServer = config.SmtpServer,
+            // Port = config.Port,
+            // Username = config.Username,
+            // Password = config.Password
+        };
+
+        var emailService = new EmailService(emailConfiguration, logger);
         var dataService = new DataService();
 
         if (rawRules != null)
@@ -25,7 +39,8 @@ public static class RuleConfigLoader
                     engine.RegisterRule(new FileMoveRule(
                         raw.GetProperty("source").GetString() ?? string.Empty,
                         raw.GetProperty("target").GetString() ?? string.Empty,
-                        fileService));
+                        fileService
+                        ));
                 }
                 else if (type == "BulkEmailRule")
                 {

@@ -3,6 +3,7 @@ namespace AutomationApp.Interfaces
     public interface IAutomationRule
     {
         string RuleName { get; }
-        Task ExecuteAsync();
+        Task <bool> ExecuteAsync();
+        bool Enabled { get; }
     }
 }

@@ -1,20 +1,107 @@
-﻿using AutomationApp.Services;
-using AutomationApp.Utils;
+using AutomationApp.Services;
+using AutomationApp.Models;
+using AutomationApp.Interfaces;
+using System.Text.Json;
+using System.IO;
+using AutomationApp.Rules;
+using AutomationApp.Cli;
 
-var engine = new AutomationEngine();
+try
+{
+    // Initialize logger
+    var logger = new Logger("Program");
+    logger.Log("Starting Task Automation Tool");
 
-// Load services
-var fileService = new FileService();
-var dataService = new DataService();
-var emailService = new EmailService();
-var emailConfig = Helpers.LoadEmailConfig();
+    // Load configuration
+    var config = LoadConfiguration();
+    if (config == null)
+    {
+        logger.LogError(new Exception("Failed to load configuration"));
+        return 1;
+    }
 
-// Register rules
-engine.RegisterRule(new FileMoveRule(@"C:\Watch", @"C:\Sorted", fileService));
-engine.RegisterRule(new BulkEmailRule(emailService, dataService, emailConfig));
+    // Initialize services with proper dependency injection
+    var fileService = new FileService(logger);
+    var dataService = new DataService();
+    var emailService = new EmailService(config.Email, logger);
 
-// Handle CLI
-await CommandHandler.HandleAsync(args, engine);
+    // Initialize engine
+    var engine = new AutomationEngine(logger);
+
+    // Register rules from configuration
+    foreach (var rule in config.Rules)
+    {
+        try
+        {
+            if (!rule.Enabled) continue;
+
+            switch (rule.Type.ToLower())
+            {
+                case "filemoverule":
+                    engine.RegisterRule(new FileMoveRule(
+                        rule.Settings["source"],
+                        rule.Settings["target"],
+                        fileService,
+                        logger));
+                    break;
+                case "bulkemailrule":
+                    engine.RegisterRule(new BulkEmailRule(
+                        emailService,
+                        dataService,
+                        config
+                    ));
+                    break;
+                default:
+                    logger.LogWarning($"Unknown rule type: {rule.Type}");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"Failed to register rule: {rule.Name}");
+        }
+    }
+
+    // Handle CLI commands
+    await CommandHandler.HandleAsync(args, engine, logger);
+    return 0;
+}
+catch (Exception ex)
+{
+    Console.WriteLine("Fatal error in application startup");
+    return 1;
+}
+
+static AppConfiguration? LoadConfiguration()
+{
+    try
+    {
+        var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+        if (!File.Exists(configPath))
+        {
+            // Create default configuration
+            var config = new AppConfiguration();
+            config.Email.Host = "smtp.example.com";
+            config.Email.Port = 587;
+            config.Email.Username = "user@example.com";
+            config.Email.Password = "password";
+            config.Email.UseSsl = true;
+
+            // Save default configuration
+            var jsonString = JsonSerializer.Serialize(config);
+            File.WriteAllText(configPath, jsonString);
+            return config;
+        }
+
+        var json = File.ReadAllText(configPath);
+        return JsonSerializer.Deserialize<AppConfiguration>(json);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error loading configuration: {ex.Message}");
+        return null;
+    }
+}
 
 
 // var config = Helpers.LoadEmailConfig();

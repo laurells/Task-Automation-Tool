@@ -3,124 +3,225 @@ using MailKit.Net.Imap;
 using MailKit.Security;
 using MimeKit;
 using AutomationApp.Models;
+using System.Text.RegularExpressions;
+using System.IO;
+using AutomationApp.Services;
+using System.Globalization;
+using CsvHelper;
+
 namespace AutomationApp.Services
 {
-    // Define EmailRecipient if it doesn't exist elsewhere
     public class EmailRecipient
     {
-        public string? Name { get; set; }
-        public string? Email { get; set; }
-        public string? Message { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Subject { get; set; } = string.Empty;
+        public string Body { get; set; } = string.Empty;
+        public List<string> Attachments { get; set; } = new List<string>();
+    }
+
+    public class EmailTemplate
+    {
+        public string Subject { get; set; } = string.Empty;
+        public string Body { get; set; } = string.Empty;
+        public Dictionary<string, string> Variables { get; set; } = new Dictionary<string, string>();
     }
 
     public class EmailService
     {
-        public static async Task SendEmailAsync(string smtpHost, int port, bool useSSL, string fromEmail, string password, string toEmail, string subject, string body)
+        private readonly EmailConfiguration _config;
+        private readonly Logger _logger;
+
+        public EmailService(EmailConfiguration config, Logger logger)
         {
-            var message = new MimeMessage();
-            message.From.Add(MailboxAddress.Parse(fromEmail));
-            message.To.Add(MailboxAddress.Parse(toEmail));
-            message.Subject = subject;
-            message.Body = new TextPart("plain") { Text = body };
+            _config = config;
+            _logger = logger;
+        }
 
-            using var client = new SmtpClient();
+        public async Task<bool> SendEmailAsync(EmailRecipient recipient, EmailTemplate? template = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(recipient.Email))
+                {
+                    _logger.LogWarning($"Invalid email address for recipient {recipient.Name}");
+                    return false;
+                }
 
-            await client.ConnectAsync(smtpHost, port, useSSL ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(fromEmail, password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+                var message = new MimeMessage();
+                message.From.Add(MailboxAddress.Parse(_config.Email));
+                message.To.Add(MailboxAddress.Parse(recipient.Email));
 
-            Console.WriteLine("Email sent successfully.");
+                // Use template if provided, otherwise use recipient's subject/body
+                message.Subject = template?.Subject ?? recipient.Subject;
+                
+                var bodyBuilder = new BodyBuilder();
+                
+                if (template != null)
+                {
+                    // Replace template variables
+                    var processedBody = template.Body;
+                    foreach (var variable in template.Variables)
+                    {
+                        processedBody = processedBody.Replace($"{{{{ {variable.Key} }}}}", variable.Value);
+                    }
+                    bodyBuilder.HtmlBody = processedBody;
+                }
+                else
+                {
+                    bodyBuilder.HtmlBody = recipient.Body;
+                }
+
+                // Add attachments if any
+                foreach (var attachment in recipient.Attachments)
+                {
+                    try
+                    {
+                        if (File.Exists(attachment))
+                        {
+                            bodyBuilder.Attachments.Add(attachment);
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Attachment not found: {attachment}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to add attachment: {attachment}");
+                    }
+                }
+
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using var client = new SmtpClient();
+                try
+                {
+                    await client.ConnectAsync(_config.SmtpHost, _config.SmtpPort, _config.UseSmtpSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(_config.Email, _config.Password);
+                    await client.SendAsync(message);
+                    await client.DisconnectAsync(true);
+
+                    _logger.LogSuccess($"Email sent successfully to {recipient.Email}");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to send email to {recipient.Email}");
+                    throw;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error processing email for recipient {recipient.Name}");
+                return false;
+            }
+        }
+
+        public async Task<List<EmailRecipient>> ReadEmailsAsync()
+        {
+            var recipients = new List<EmailRecipient>();
+            try
+            {
+                using var client = new ImapClient();
+                await client.ConnectAsync(_config.ImapHost, _config.ImapPort, _config.UseImapSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(_config.Email, _config.Password);
+
+                var inbox = client.Inbox;
+                await inbox.OpenAsync(MailKit.FolderAccess.ReadOnly);
+
+                for (int i = 0; i < inbox.Count; i++)
+                {
+                    var message = await inbox.GetMessageAsync(i);
+                    var recipient = new EmailRecipient
+                    {
+                        Name = message.From.Mailboxes.FirstOrDefault()?.Name ?? string.Empty,
+                        Email = message.From.Mailboxes.FirstOrDefault()?.Address ?? string.Empty,
+                        Subject = message.Subject ?? string.Empty,
+                        Body = message.TextBody ?? string.Empty
+                    };
+                    recipients.Add(recipient);
+                }
+
+                await client.DisconnectAsync(true);
+                _logger.LogInfo($"Read {recipients.Count} emails from inbox");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading emails from inbox");
+            }
+
+            return recipients;
+        }
+
+        public async Task<bool> SendEmailsFromCsvAsync(string csvPath)
+        {
+            try
+            {
+                if (!File.Exists(csvPath))
+                {
+                    _logger.LogError(new FileNotFoundException($"CSV file not found: {csvPath}"), $"CSV file not found: {csvPath}");
+                    return false;
+                }
+
+                var recipients = new List<EmailRecipient>();
+                using var reader = new StreamReader(csvPath);
+                using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                
+                while (await csv.ReadAsync())
+                {
+                    var recipient = new EmailRecipient
+                    {
+                        Name = csv.GetField("Name") ?? string.Empty,
+                        Email = csv.GetField("Email") ?? string.Empty,
+                        Subject = csv.GetField("Subject") ?? string.Empty,
+                        Body = csv.GetField("Body") ?? string.Empty
+                    };
+                    recipients.Add(recipient);
+                }
+
+                foreach (var recipient in recipients)
+                {
+                    await SendEmailAsync(recipient);
+                }
+
+                _logger.LogSuccess($"Processed {recipients.Count} emails from CSV");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error processing CSV file: {csvPath}");
+                return false;
+            }
         }
 
         public async Task SendBulkEmailsAsync(EmailConfig config, List<EmailRecipient> recipients)
         {
             using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(config.SmtpHost, config.SmtpPort, config.UseSmtpSsl);
-            await smtp.AuthenticateAsync(config.Email, config.Password);
-
-            foreach (var r in recipients)
+            try
             {
-                var msg = new MimeMessage();
-                msg.From.Add(MailboxAddress.Parse(config.Email));
-                msg.To.Add(MailboxAddress.Parse(r.Email));
-                msg.Subject = $"Message for {r.Name}";
-                msg.Body = new TextPart("plain") { Text = r.Message };
+                await smtp.ConnectAsync(config.SmtpHost, config.SmtpPort, config.UseSmtpSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(config.Email, config.Password);
 
-                await smtp.SendAsync(msg);
-                Console.WriteLine($"Sent email to {r.Email}");
-            }
-
-            await smtp.DisconnectAsync(true);
-        }
-
-
-        public static async Task ReadInboxAsync(string imapHost, int port, bool useSSL, string email, string password)
-        {
-            using var client = new ImapClient();
-
-            await client.ConnectAsync(imapHost, port, useSSL ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(email, password);
-            await client.Inbox.OpenAsync(MailKit.FolderAccess.ReadOnly);
-
-            Console.WriteLine("Reading latest 5 emails:\n");
-
-            int count = client.Inbox.Count;
-            for (int i = count - 1; i >= Math.Max(0, count - 5); i--)
-            {
-                var message = await client.Inbox.GetMessageAsync(i);
-                Console.WriteLine($"From: {message.From}, Subject: {message.Subject}");
-            }
-
-            await client.DisconnectAsync(true);
-        }
-
-        public static async Task ApplyInboxRulesAsync(EmailConfig config)
-        {
-            using var client = new ImapClient();
-
-            await client.ConnectAsync(config.ImapHost, config.ImapPort, config.UseImapSsl);
-            await client.AuthenticateAsync(config.Email, config.Password);
-            await client.Inbox.OpenAsync(MailKit.FolderAccess.ReadWrite);
-
-            var uids = await client.Inbox.SearchAsync(MailKit.Search.SearchQuery.All);
-            foreach (var uid in uids)
-            {
-                var message = await client.Inbox.GetMessageAsync(uid);
-
-                // Rule: Delete emails from specific sender
-                // if (message.From.ToString().Contains("spam@example.com"))
-                // {
-                //     await client.Inbox.AddFlagsAsync(uid, MailKit.MessageFlags.Deleted, true);
-                //     Console.WriteLine($"Deleted spam from: {message.From}");
-                // }
-
-                // Rule: Auto-forward emails with subject containing "Urgent"
-                if (message.Subject.Contains("Urgent", StringComparison.OrdinalIgnoreCase))
+                foreach (var recipient in recipients)
                 {
-                    await ForwardEmailAsync(config, message);
+                    var message = new MimeMessage();
+                    message.From.Add(MailboxAddress.Parse(config.Email));
+                    message.To.Add(MailboxAddress.Parse(recipient.Email));
+                    message.Subject = recipient.Subject;
+                    message.Body = new TextPart("plain") { Text = recipient.Body };
+
+                    await smtp.SendAsync(message);
+                    _logger.LogInfo($"Email sent to {recipient.Email}");
                 }
+
+                await smtp.DisconnectAsync(true);
             }
-
-            await client.DisconnectAsync(true);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending bulk emails");
+                throw;
+            }
         }
-
-        private static async Task ForwardEmailAsync(EmailConfig config, MimeMessage original)
-        {
-            var forward = new MimeMessage();
-            forward.From.Add(MailboxAddress.Parse(config.Email));
-            forward.To.Add(MailboxAddress.Parse("your-forwarding-email@example.com"));
-            forward.Subject = $"FWD: {original.Subject}";
-            forward.Body = new TextPart("plain") { Text = original.TextBody ?? "[No body content]" };
-
-            using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(config.SmtpHost, config.SmtpPort, config.UseSmtpSsl);
-            await smtp.AuthenticateAsync(config.Email, config.Password);
-            await smtp.SendAsync(forward);
-            await smtp.DisconnectAsync(true);
-
-            Console.WriteLine("Forwarded urgent email.");
-        }
-
     }
 }
