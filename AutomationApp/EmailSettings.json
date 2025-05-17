@@ -1,0 +1,10 @@
+{
+  "Email": "your-email@gmail.com",
+  "Password": "your-app-password",
+  "SmtpHost": "smtp.gmail.com",
+  "SmtpPort": 587,
+  "UseSmtpSsl": false,
+  "ImapHost": "imap.gmail.com",
+  "ImapPort": 993,
+  "UseImapSsl": true
+}

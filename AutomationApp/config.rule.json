@@ -1,0 +1,11 @@
+[
+  {
+    "type": "FileMoveRule",
+    "source": "C:/Watch",
+    "target": "C:/Sorted"
+  },
+  {
+    "type": "BulkEmailRule",
+    "csv": "recipients.csv"
+  }
+]
