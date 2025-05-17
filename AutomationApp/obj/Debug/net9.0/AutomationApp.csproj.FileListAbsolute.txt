@@ -34,3 +34,15 @@ c:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Debug\net9.0\Automa
 c:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Debug\net9.0\AutomationApp.genruntimeconfig.cache
 c:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Debug\net9.0\ref\AutomationApp.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\EmailSettings.json
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Binder.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Logging.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Logging.Configuration.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Logging.Console.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll

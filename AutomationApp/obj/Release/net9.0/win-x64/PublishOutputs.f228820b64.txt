@@ -1,4 +1,5 @@
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\AutomationApp.exe
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\EmailSettings.json
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\AutomationApp.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\AutomationApp.deps.json
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\AutomationApp.runtimeconfig.json
@@ -195,6 +196,18 @@ C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\DocumentFormat.OpenXml.Framework.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\ExcelNumberFormat.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\MailKit.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Configuration.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Configuration.Binder.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Logging.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Logging.Configuration.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Logging.Console.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Options.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Options.ConfigurationExtensions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\Microsoft.Extensions.Primitives.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\MimeKit.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\RBush.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\publish\SixLabors.Fonts.dll

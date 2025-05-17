@@ -1,7 +1,3 @@
-using AutomationApp;
-using AutomationApp.Services;
-using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace AutomationApp.Cli
@@ -152,7 +148,7 @@ namespace AutomationApp.Cli
             }
         }
 
-        private static async Task StatusCommand(AutomationEngine engine, ILogger logger)
+        private static Task StatusCommand(AutomationEngine engine, ILogger logger)
         {
             logger.LogInformation("Task Automation Tool Status");
             logger.LogInformation($"Rules configured: {engine.Rules.Count}");
@@ -166,6 +162,7 @@ namespace AutomationApp.Cli
                 // logger.LogInformation($"  Success: {rule.SuccessCount}");
                 // logger.LogInformation($"  Failures: {rule.FailureCount}");
             }
+            return Task.CompletedTask;
         }
     }
 }

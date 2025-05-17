@@ -1,0 +1,11 @@
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.csproj.AssemblyReference.cache
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\Avalonia\Resources.Inputs.cache
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\Avalonia\resources
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.AssemblyInfoInputs.cache
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.AssemblyInfo.cs
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.csproj.CoreCompileInputs.cache
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.sourcelink.json
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\refint\AutomationApp.Gui.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp.Gui\obj\Debug\net9.0\AutomationApp.Gui.pdb

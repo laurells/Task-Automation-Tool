@@ -216,3 +216,16 @@ C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Release\net9.0\win-
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Release\net9.0\win-x64\AutomationApp.pdb
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Release\net9.0\win-x64\AutomationApp.genruntimeconfig.cache
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\obj\Release\net9.0\win-x64\ref\AutomationApp.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\EmailSettings.json
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Configuration.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Configuration.Binder.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Logging.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Logging.Configuration.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Logging.Console.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Options.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Options.ConfigurationExtensions.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Release\net9.0\win-x64\Microsoft.Extensions.Primitives.dll

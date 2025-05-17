@@ -6,7 +6,6 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="AutomationApp.Gui.MainWindow"
         Title="Task Automation Dashboard">
-    <!-- Welcome to Avalonia! -->
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
@@ -14,19 +13,18 @@
     <DockPanel>
         <StackPanel Margin="20" Spacing="12">
             <TextBlock Text="Automation Rules" FontSize="24" FontWeight="Bold" />
-            
             <ItemsControl Items="{Binding Rules}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <TextBlock Text="{Binding RuleName}" Width="300"/>
-                            <Button Content="Run" Command="{Binding DataContext.RunCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding RuleName}" />
+                            <Button Content="Run"
+                                    Command="{Binding DataContext.RunCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                     CommandParameter="{Binding RuleName}" />
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-
             <Button Content="Run All Rules" Command="{Binding RunAllCommand}" Margin="0,20,0,0"/>
         </StackPanel>
     </DockPanel>

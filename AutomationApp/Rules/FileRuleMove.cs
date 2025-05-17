@@ -10,9 +10,12 @@ namespace AutomationApp.Rules
         private readonly string _target;
         private readonly FileService _fileService;
         private readonly ILogger _logger;
-        private readonly string[] _supportedExtensions = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".json", ".xml" };
+        private readonly string[] _supportedExtensions;
+        private readonly bool _addTimestamp;
+        private readonly bool _backupFiles;
 
-        public FileMoveRule(string source, string target, FileService fileService, ILogger logger) 
+        public FileMoveRule(string source, string target, FileService fileService, ILogger logger, 
+            string[] supportedExtensions = null, bool addTimestamp = true, bool backupFiles = false) 
         {
             if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(target))
             {
@@ -33,22 +36,37 @@ namespace AutomationApp.Rules
             _target = target;
             _fileService = fileService;
             _logger = logger;
+            _supportedExtensions = supportedExtensions ?? new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".json", ".xml" };
+            _addTimestamp = addTimestamp;
+            _backupFiles = backupFiles;
         }
 
 
         public string RuleName => $"MoveFilesTo_{Path.GetFileName(_target)}";
 
+        public bool Enabled { get; set; } = true;
+
         public async Task<bool> ExecuteAsync()
         {
             try
             {
-                if (!Directory.Exists(_source))
+                _logger.LogDebug($"Starting FileMoveRule execution with source: {_source}, target: {_target}");
+                _logger.LogDebug($"Supported extensions: {string.Join(", ", _supportedExtensions)}");
+                _logger.LogDebug($"Add timestamp: {_addTimestamp}, Backup files: {_backupFiles}");
+                
+                // Check if source is a file or directory
+                bool isSourceFile = File.Exists(_source);
+                bool isTargetDirectory = Directory.Exists(_target);
+
+                _logger.LogDebug($"Source is file: {isSourceFile}, Target is directory: {isTargetDirectory}");
+
+                if (!isSourceFile && !Directory.Exists(_source))
                 {
-                    _logger.LogWarning($"Source directory not found: {_source}");
+                    _logger.LogError($"Source path not found: {_source}");
                     return false;
                 }
 
-                if (!Directory.Exists(_target))
+                if (!isTargetDirectory && !Directory.Exists(_target))
                 {
                     try
                     {
@@ -65,44 +83,112 @@ namespace AutomationApp.Rules
                 var processedFiles = 0;
                 var failedFiles = 0;
 
-                foreach (var extension in _supportedExtensions)
+                if (isSourceFile)
                 {
-                    var files = Directory.GetFiles(_source, $"*{extension}");
-                    foreach (var file in files)
+                    // Handle single file move
+                    string sourceExt = Path.GetExtension(_source).ToLower();
+                    if (_supportedExtensions.Contains(sourceExt))
                     {
                         try
                         {
-                            var dest = Path.Combine(_target, Path.GetFileName(file));
+                            string dest = Path.Combine(_target, Path.GetFileName(_source));
+                            _logger.LogDebug($"Attempting to move file: {_source} to {dest}");
                             
                             // Check if file already exists in target
                             if (File.Exists(dest))
                             {
-                                // Compare file hashes to avoid duplicates
-                                if (await _fileService.CompareFileHashesAsync(file, dest))
+                                _logger.LogDebug($"Destination file exists: {dest}");
+                                if (await _fileService.CompareFileHashesAsync(_source, dest))
                                 {
-                                    _logger.LogInformation($"Skipping duplicate file: {Path.GetFileName(file)}");
-                                    continue;
+                                    _logger.LogInformation($"Skipping duplicate file: {Path.GetFileName(_source)}");
+                                    return true;
                                 }
                                 
-                                // Add timestamp to avoid overwriting
-                                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                                dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(file)}_{timestamp}{Path.GetExtension(file)}");
-                            }
-                            else
-                            {
-                                // Add timestamp to avoid overwriting
-                                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                                dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(file)}_{timestamp}{Path.GetExtension(file)}");
+                                if (_addTimestamp)
+                                {
+                                    var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                                    dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(_source)}_{timestamp}{Path.GetExtension(_source)}");
+                                    _logger.LogDebug($"Using timestamped destination: {dest}");
+                                }
                             }
 
-                            await _fileService.MoveFileAsync(file, dest);
+                            if (_backupFiles)
+                            {
+                                var backupDest = Path.Combine(_target, "backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                                Directory.CreateDirectory(backupDest);
+                                var backupFile = Path.Combine(backupDest, Path.GetFileName(_source));
+                                _logger.LogDebug($"Creating backup of file: {_source} to {backupFile}");
+                                await _fileService.CopyFileAsync(_source, backupFile);
+                            }
+
+                            await _fileService.MoveFileAsync(_source, dest);
                             processedFiles++;
-                            _logger.LogInformation($"Moved file: {Path.GetFileName(file)}");
+                            _logger.LogInformation($"Successfully moved file: {Path.GetFileName(_source)}");
                         }
                         catch (Exception ex)
                         {
                             failedFiles++;
-                            _logger.LogError(ex, $"Failed to move file: {Path.GetFileName(file)}");
+                            _logger.LogError(ex, $"Failed to move file: {Path.GetFileName(_source)}");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"File extension not supported: {sourceExt}");
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation($"Processing directory: {_source}");
+                    // Handle directory move
+                    foreach (var extension in _supportedExtensions)
+                    {
+                        _logger.LogDebug($"Searching for files with extension: {extension}");
+                        var files = Directory.GetFiles(_source, $"*{extension}");
+                        _logger.LogDebug($"Found {files.Length} files with extension {extension}");
+                        
+                        foreach (var file in files)
+                        {
+                            try
+                            {
+                                string dest = Path.Combine(_target, Path.GetFileName(file));
+                                _logger.LogDebug($"Attempting to move file: {file} to {dest}");
+                                
+                                // Check if file already exists in target
+                                if (File.Exists(dest))
+                                {
+                                    _logger.LogDebug($"Destination file exists: {dest}");
+                                    if (await _fileService.CompareFileHashesAsync(file, dest))
+                                    {
+                                        _logger.LogInformation($"Skipping duplicate file: {Path.GetFileName(file)}");
+                                        continue;
+                                    }
+                                    
+                                    if (_addTimestamp)
+                                    {
+                                        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                                        dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(file)}_{timestamp}{Path.GetExtension(file)}");
+                                        _logger.LogDebug($"Using timestamped destination: {dest}");
+                                    }
+                                }
+
+                                if (_backupFiles)
+                                {
+                                    var backupDest = Path.Combine(_target, "backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                                    Directory.CreateDirectory(backupDest);
+                                    var backupFile = Path.Combine(backupDest, Path.GetFileName(file));
+                                    _logger.LogDebug($"Creating backup of file: {file} to {backupFile}");
+                                    await _fileService.CopyFileAsync(file, backupFile);
+                                }
+
+                                await _fileService.MoveFileAsync(file, dest);
+                                processedFiles++;
+                                _logger.LogInformation($"Successfully moved file: {Path.GetFileName(file)}");
+                            }
+                            catch (Exception ex)
+                            {
+                                failedFiles++;
+                                _logger.LogError(ex, $"Failed to move file: {Path.GetFileName(file)}");
+                            }
                         }
                     }
                 }
@@ -114,8 +200,6 @@ namespace AutomationApp.Rules
             {
                 _logger.LogError(ex, "Error in FileMoveRule execution");
                 return false;
-            }
-        }
             }
         }
 

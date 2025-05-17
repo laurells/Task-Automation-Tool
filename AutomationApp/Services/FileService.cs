@@ -4,10 +4,11 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using AutomationApp.Services;
+using AutomationApp.Interfaces;
 
 namespace AutomationApp.Services
 {
-    public class FileService(Logger logger)
+    public class FileService(Logger logger) : IFileService
     {
         private readonly Logger _logger = logger;
 
@@ -34,7 +35,12 @@ namespace AutomationApp.Services
             {
                 await Task.Run(() =>
                 {
-                    File.Move(source, destination, overwrite);
+                    if (File.Exists(destination) && !overwrite)
+                    {
+                        throw new IOException($"Destination file already exists: {destination}");
+                    }
+
+                    File.Move(source, destination);
                     _logger.LogSuccess($"Moved: {source} -> {destination}");
                 });
             }

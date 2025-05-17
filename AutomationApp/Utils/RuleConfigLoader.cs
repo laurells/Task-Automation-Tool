@@ -39,7 +39,8 @@ public static class RuleConfigLoader
                     engine.RegisterRule(new FileMoveRule(
                         raw.GetProperty("source").GetString() ?? string.Empty,
                         raw.GetProperty("target").GetString() ?? string.Empty,
-                        fileService
+                        fileService,
+                        logger
                         ));
                 }
                 else if (type == "BulkEmailRule")

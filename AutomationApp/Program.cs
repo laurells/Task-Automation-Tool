@@ -10,10 +10,11 @@ try
 {
     // Initialize logger
     var logger = new Logger("Program");
-    logger.Log("Starting Task Automation Tool");
+    Console.WriteLine("Starting Task Automation Tool");
 
     // Load configuration
     var config = LoadConfiguration();
+    var emailConfig = new EmailConfig();
     if (config == null)
     {
         logger.LogError(new Exception("Failed to load configuration"));
@@ -38,17 +39,27 @@ try
             switch (rule.Type.ToLower())
             {
                 case "filemoverule":
+                    var settings = rule.Settings;
+                    var extensions = (settings.ContainsKey("supportedExtensions") && settings["supportedExtensions"] is string extStr && !string.IsNullOrWhiteSpace(extStr))
+                        ? extStr.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        : Array.Empty<string>();
+                    var addTimestamp = bool.Parse(settings["addTimestamp"] ?? "false");
+                    var backupFiles = bool.Parse(settings["backupFiles"] ?? "false");
+                    
                     engine.RegisterRule(new FileMoveRule(
-                        rule.Settings["source"],
-                        rule.Settings["target"],
+                        settings["source"],
+                        settings["target"],
                         fileService,
-                        logger));
+                        logger,
+                        extensions,
+                        addTimestamp,
+                        backupFiles));
                     break;
                 case "bulkemailrule":
                     engine.RegisterRule(new BulkEmailRule(
                         emailService,
                         dataService,
-                        config
+                        emailConfig
                     ));
                     break;
                 default:
@@ -77,24 +88,46 @@ static AppConfiguration? LoadConfiguration()
     try
     {
         var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
+        
         if (!File.Exists(configPath))
         {
             // Create default configuration
             var config = new AppConfiguration();
-            config.Email.Host = "smtp.example.com";
-            config.Email.Port = 587;
-            config.Email.Username = "user@example.com";
+            config.Email.SmtpHost = "smtp.example.com";
+            config.Email.SmtpPort = 587;
+            config.Email.Email = "user@example.com";
             config.Email.Password = "password";
-            config.Email.UseSsl = true;
+            config.Email.UseSmtpSsl = true;
 
             // Save default configuration
-            var jsonString = JsonSerializer.Serialize(config);
+            var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(configPath, jsonString);
             return config;
         }
 
-        var json = File.ReadAllText(configPath);
-        return JsonSerializer.Deserialize<AppConfiguration>(json);
+        try
+        {
+            var json = File.ReadAllText(configPath);
+            var config = JsonSerializer.Deserialize<AppConfiguration>(json);
+            
+            if (config == null)
+            {
+                throw new JsonException("Failed to deserialize configuration");
+            }
+
+            // Validate required fields
+            if (string.IsNullOrEmpty(config.Email.SmtpHost))
+                throw new InvalidOperationException("SMTP host is required");
+            if (config.Email.SmtpPort <= 0)
+                throw new InvalidOperationException("SMTP port must be greater than 0");
+            config.Rules ??= new List<AutomationRule>();
+
+            return config;
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException($"Invalid JSON in configuration file: {ex.Message}", ex);
+        }
     }
     catch (Exception ex)
     {

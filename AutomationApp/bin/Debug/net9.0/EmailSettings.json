@@ -1,9 +1,9 @@
 {
-  "Email": "your-email@gmail.com",
-  "Password": "your-app-password",
   "SmtpHost": "smtp.gmail.com",
   "SmtpPort": 587,
-  "UseSmtpSsl": false,
+  "UseSmtpSsl": true,
+  "Email": "laurels.echichinwojr@gmail.com",
+  "Password": "L@urels81156357.",
   "ImapHost": "imap.gmail.com",
   "ImapPort": 993,
   "UseImapSsl": true
