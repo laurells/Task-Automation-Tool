@@ -1,13 +1,14 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="AutomationApp.MainWindow"
-        Title="Task Automation Tool - Rule Configuration"
+        Title="Task Automation Tool"
         Width="600" Height="400" CanResize="False">
   <StackPanel Margin="20">
     <TextBlock Text="Rule Type:" />
     <ComboBox x:Name="RuleTypeComboBox" SelectedIndex="0">
       <ComboBoxItem>FileMoveRule</ComboBoxItem>
       <ComboBoxItem>BulkEmailRule</ComboBoxItem>
+      <ComboBoxItem>DataProcessingRule</ComboBoxItem>
     </ComboBox>
     <TextBlock Text="Rule Name:" Margin="0,10,0,0" />
     <TextBox x:Name="RuleNameTextBox" />

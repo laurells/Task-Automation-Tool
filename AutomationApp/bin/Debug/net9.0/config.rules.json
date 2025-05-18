@@ -9,5 +9,10 @@
     ],
     "addTimestamp": false,
     "backupFiles": true
+  },
+  {
+    "type": "DataProcessingRule",
+    "name": "ProcessingDataFromCSV_automation",
+    "csvPath": "C:\\\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data.csv"
   }
 ]

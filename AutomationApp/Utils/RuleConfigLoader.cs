@@ -13,7 +13,7 @@ namespace AutomationApp.Utils
             var logger = new Logger("RuleConfigLoader", loggingConfig);
             var engine = new AutomationEngine(logger);
             var fileService = new FileService(logger);
-            var dataService = new DataService();
+            var dataService = new DataService(logger);
 
             // Load EmailConfig
             EmailConfig config;
@@ -83,6 +83,7 @@ namespace AutomationApp.Utils
                             {
                                 "filemoverule" => "FileMoveRule",
                                 "bulkemailrule" => "BulkEmailRule",
+                                "dataprocessingrule" => "DataProcessingRule",
                                 _ => "UnknownRule"
                             };
 
@@ -147,6 +148,30 @@ namespace AutomationApp.Utils
                                     ruleName)); // Updated to pass ruleName
                                 logger.LogInfo($"Registered rule: {ruleName} (csv: {csvPath})");
                                 break;
+                            case "dataprocessingrule":
+                            if (!raw.TryGetProperty("dataPath", out var dataElement) || string.IsNullOrEmpty(dataElement
+                                .GetString()))
+                            {
+                                logger.LogWarning("Skipping DataProcessingRule with missing or invalid 'dataPath'");
+                                continue;
+                            }
+                            var dataPath = dataElement.GetString()!;
+                            if (!File.Exists(dataPath))
+                            {
+                                logger.LogWarning($"Data file not found for DataProcessingRule: {dataPath}");
+                                continue;
+                            }
+                            var requiredColumns = raw.TryGetProperty("requiredColumns", out var colsElement) && colsElement.ValueKind == JsonValueKind.Array
+                                ? colsElement.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray()!
+                                : Array.Empty<string>();
+                            engine.RegisterRule(new DataProcessingRule(
+                                dataService,
+                                dataPath,
+                                requiredColumns as string[],
+                                logger,
+                                ruleName)); // Updated to pass ruleName
+                            logger.LogInfo($"Registered rule: {ruleName} (data: {dataPath})");
+                            break;
 
                             default:
                                 logger.LogWarning($"Unknown rule type: {type}");

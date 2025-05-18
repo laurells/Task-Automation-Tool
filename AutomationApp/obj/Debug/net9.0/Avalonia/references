@@ -16,22 +16,30 @@ C:\Users\USER\.nuget\packages\closedxml.parser\2.0.0\lib\netstandard2.1\ClosedXM
 C:\Users\USER\.nuget\packages\csvhelper\33.0.1\lib\net8.0\CsvHelper.dll
 C:\Users\USER\.nuget\packages\documentformat.openxml\3.1.1\lib\net8.0\DocumentFormat.OpenXml.dll
 C:\Users\USER\.nuget\packages\documentformat.openxml.framework\3.1.1\lib\net8.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\USER\.nuget\packages\epplus\8.0.5\lib\net9.0\EPPlus.dll
+C:\Users\USER\.nuget\packages\epplus.interfaces\8.0.0\lib\net9.0\EPPlus.Interfaces.dll
 C:\Users\USER\.nuget\packages\excelnumberformat\1.1.0\lib\netstandard2.0\ExcelNumberFormat.dll
 C:\Users\USER\.nuget\packages\mailkit\4.12.0\lib\net8.0\MailKit.dll
 C:\Users\USER\.nuget\packages\microcom.runtime\0.11.0\lib\net5.0\MicroCom.Runtime.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\Microsoft.CSharp.dll
-C:\Users\USER\.nuget\packages\microsoft.extensions.configuration.abstractions\9.0.0\lib\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.configuration.abstractions\9.0.3\lib\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.configuration.binder\9.0.0\lib\net9.0\Microsoft.Extensions.Configuration.Binder.dll
-C:\Users\USER\.nuget\packages\microsoft.extensions.configuration\9.0.0\lib\net9.0\Microsoft.Extensions.Configuration.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.configuration\9.0.3\lib\net9.0\Microsoft.Extensions.Configuration.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.configuration.fileextensions\9.0.3\lib\net9.0\Microsoft.Extensions.Configuration.FileExtensions.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.configuration.json\9.0.3\lib\net9.0\Microsoft.Extensions.Configuration.Json.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\9.0.0\lib\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.dependencyinjection\9.0.0\lib\net9.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.fileproviders.abstractions\9.0.3\lib\net9.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.fileproviders.physical\9.0.3\lib\net9.0\Microsoft.Extensions.FileProviders.Physical.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.filesystemglobbing\9.0.3\lib\net9.0\Microsoft.Extensions.FileSystemGlobbing.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.logging.abstractions\9.0.0\lib\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.logging.configuration\9.0.0\lib\net9.0\Microsoft.Extensions.Logging.Configuration.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.logging.console\9.0.0\lib\net9.0\Microsoft.Extensions.Logging.Console.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.logging\9.0.0\lib\net9.0\Microsoft.Extensions.Logging.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.options.configurationextensions\9.0.0\lib\net9.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.options\9.0.0\lib\net9.0\Microsoft.Extensions.Options.dll
-C:\Users\USER\.nuget\packages\microsoft.extensions.primitives\9.0.0\lib\net9.0\Microsoft.Extensions.Primitives.dll
+C:\Users\USER\.nuget\packages\microsoft.extensions.primitives\9.0.3\lib\net9.0\Microsoft.Extensions.Primitives.dll
+C:\Users\USER\.nuget\packages\microsoft.io.recyclablememorystream\3.0.1\lib\net6.0\Microsoft.IO.RecyclableMemoryStream.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\Microsoft.VisualBasic.Core.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\Microsoft.VisualBasic.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\Microsoft.Win32.Primitives.dll
@@ -160,9 +168,10 @@ C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.Cryptography.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.Cryptography.Encoding.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.Cryptography.OpenSsl.dll
-C:\Users\USER\.nuget\packages\system.security.cryptography.pkcs\8.0.1\lib\net8.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\USER\.nuget\packages\system.security.cryptography.pkcs\9.0.3\lib\net9.0\System.Security.Cryptography.Pkcs.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.Cryptography.Primitives.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.Cryptography.X509Certificates.dll
+C:\Users\USER\.nuget\packages\system.security.cryptography.xml\9.0.3\lib\net9.0\System.Security.Cryptography.Xml.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.Principal.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Security.Principal.Windows.dll

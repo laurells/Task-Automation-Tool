@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using System.Text.Json;
 using AutomationApp.Services;
 using AutomationApp.Core;
+using Avalonia.Platform.Storage;
 
 namespace AutomationApp
 {
@@ -87,7 +88,7 @@ namespace AutomationApp
                             backupFiles = backupCheckBox.IsChecked ?? false
                         };
                     }
-                    else // BulkEmailRule
+                    else if (ruleTypeComboBox.SelectedIndex == 1)
                     {
                         var csvPath = await InputDialog.Show(this, "Enter CSV file path:", "BulkEmailRule Configuration");
                         if (string.IsNullOrEmpty(csvPath) || !File.Exists(csvPath))
@@ -101,6 +102,45 @@ namespace AutomationApp
                             type = "BulkEmailRule",
                             name = ruleNameTextBox.Text,
                             csvPath
+                        };
+                    }
+                    else
+                    {
+                        var filePicker = StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+                        {
+                            Title = "Select CSV or Excel File",
+                            FileTypeFilter = new[]
+                            {
+                                new FilePickerFileType("CSV and Excel Files") { Patterns = new[] { "*.csv", "*.xlsx", "*.xls" } },
+                                new FilePickerFileType("All Files") { Patterns = new[] { "*" } }
+                            },
+                            AllowMultiple = false
+                        });
+
+                        var files = await filePicker;
+                        var filePath = files.FirstOrDefault()?.Path.LocalPath;
+
+                        if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                        {
+                            await MessageBox.Show(this, "Please select a valid CSV or Excel file.", "Error", MessageBox.MessageBoxButtons.Ok);
+                            return;
+                        }
+
+                        var columnsInput = await InputDialog.Show(this, "Enter required columns (comma-separated, e.g., id,name):", "DataProcessingRule Configuration");
+                        var requiredColumns = columnsInput.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToArray();
+
+                        if (!requiredColumns.Any())
+                        {
+                            await MessageBox.Show(this, "At least one required column must be specified.", "Error", MessageBox.MessageBoxButtons.Ok);
+                            return;
+                        }
+
+                        rule = new
+                        {
+                            type = "DataProcessingRule",
+                            name = ruleNameTextBox.Text,
+                            filePath,
+                            requiredColumns
                         };
                     }
 

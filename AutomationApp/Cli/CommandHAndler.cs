@@ -197,12 +197,14 @@ namespace AutomationApp.Cli
                 _logger.LogInfo("\nSelect rule type to configure (or 'exit' to quit):");
                 _logger.LogInfo("1. FileMoveRule");
                 _logger.LogInfo("2. BulkEmailRule");
+                _logger.LogInfo("3. DataProcessingRule");
+                _logger.LogInfo("Enter '1', '2', or '3' to select a rule type, or 'exit' to quit:");
                 var input = Console.ReadLine()?.Trim().ToLower();
 
                 if (input == "exit")
                     break;
 
-                if (input != "1" && input != "2")
+                if (input != "1" && input != "2" && input != "3")
                 {
                     _logger.LogWarning("Invalid selection. Enter '1', '2', or 'exit'.");
                     continue;
@@ -212,10 +214,18 @@ namespace AutomationApp.Cli
                 {
                     await ConfigureFileMoveRule();
                 }
-                else
+                else if (input == "2")
                 {
                     await ConfigureBulkEmailRule();
                 }
+                else if (input == "3")
+                {
+                    await ConfigureDataProcessingRule();
+                }
+                // else
+                // {
+                //     await ConfigureBulkEmailRule();
+                // }
             }
         }
 
@@ -299,6 +309,38 @@ namespace AutomationApp.Cli
 
             await SaveRuleToConfig(rule);
             _logger.LogInfo($"BulkEmailRule '{name}' configured successfully.");
+
+        
+        }
+
+        private async Task ConfigureDataProcessingRule()
+        {
+            _logger.LogInfo("Configuring DataProcessingRule...");
+            _logger.LogInfo("Enter rule name (e.g., ProcessDataFromCSV):");
+            var name = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                _logger.LogWarning("Rule name cannot be empty.");
+                return;
+            }
+
+            _logger.LogInfo("Enter CSV file path (e.g., data.csv):");
+            var csvPath = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(csvPath) || !File.Exists(csvPath))
+            {
+                _logger.LogWarning("CSV file path is invalid or file does not exist.");
+                return;
+            }
+
+            var rule = new
+            {
+                type = "DataProcessingRule",
+                name,
+                csvPath
+            };
+
+            await SaveRuleToConfig(rule);
+            _logger.LogInfo($"DataProcessingRule '{name}' configured successfully.");
         }
 
         private async Task SaveRuleToConfig(object rule)

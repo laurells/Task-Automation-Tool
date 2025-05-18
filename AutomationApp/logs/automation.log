@@ -146,3 +146,90 @@ Enter rule name to test (or 'exit' to quit):
 [2025-05-18 21:59:15] [Info] [Program] Rule test completed successfully: movetofile_desktop
 [2025-05-18 21:59:15] [Info] [Program] 
 Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 23:45:46] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 23:45:47] [Info] [RuleConfigLoader] Rule registered: movetofile_desktop
+[2025-05-18 23:45:47] [Info] [RuleConfigLoader] Registered rule: movetofile_desktop (source: C:\Users\USER\Desktop)
+[2025-05-18 23:45:47] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 23:45:47] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 23:45:47] [Warning] [Program] Missing or invalid 'filePath' for rule: ProcessProductData
+[2025-05-18 23:45:47] [Info] [Program] Available rules:
+[2025-05-18 23:45:47] [Info] [Program] - movetofile_desktop (FileMoveRule)
+[2025-05-18 23:45:47] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 23:46:28] [Warning] [Program] Rule not found: dataprocessingrule
+[2025-05-18 23:46:28] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 23:46:41] [Warning] [Program] Rule not found: DataProcessingRole
+[2025-05-18 23:46:41] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 23:46:53] [Warning] [Program] Rule not found: DataProcessingRule
+[2025-05-18 23:46:53] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 23:47:27] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 23:47:27] [Info] [RuleConfigLoader] Rule registered: movetofile_desktop
+[2025-05-18 23:47:27] [Info] [RuleConfigLoader] Registered rule: movetofile_desktop (source: C:\Users\USER\Desktop)
+[2025-05-18 23:47:27] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 23:47:27] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 23:47:27] [Warning] [Program] Missing or invalid 'filePath' for rule: ProcessProductData
+[2025-05-18 23:47:27] [Info] [Program] Task Automation Tool - Command Line Interface
+[2025-05-18 23:47:27] [Info] [Program] Available commands:
+[2025-05-18 23:47:27] [Info] [Program]   run          - Execute all automation rules once
+[2025-05-18 23:47:27] [Info] [Program]   schedule     - Start scheduled execution of rules
+[2025-05-18 23:47:27] [Info] [Program]   test         - Test specific rules
+[2025-05-18 23:47:27] [Info] [Program]   status       - Show current status and statistics
+[2025-05-18 23:47:27] [Info] [Program]   help         - Show this help message
+[2025-05-18 23:47:27] [Info] [Program] 
+[2025-05-18 23:47:27] [Info] [Program] Examples:
+[2025-05-18 23:47:27] [Info] [Program]   automation.exe run
+[2025-05-18 23:47:27] [Info] [Program]   automation.exe schedule --interval 60
+[2025-05-18 23:47:27] [Info] [Program]   automation.exe test filemoverule
+[2025-05-18 23:47:27] [Info] [Program]   automation.exe configure
+[2025-05-19 00:04:47] [Info] [Program] Starting Task Automation Tool
+[2025-05-19 00:04:47] [Info] [RuleConfigLoader] Rule registered: movetofile_desktop
+[2025-05-19 00:04:47] [Info] [RuleConfigLoader] Registered rule: movetofile_desktop (source: C:\Users\USER\Desktop)
+[2025-05-19 00:04:47] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-19 00:04:47] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-19 00:04:47] [Warning] [Program] Missing or invalid 'filePath' for rule: ProcessProductData
+[2025-05-19 00:04:47] [Info] [Program] Starting rule configuration...
+[2025-05-19 00:04:47] [Info] [Program] 
+Select rule type to configure (or 'exit' to quit):
+[2025-05-19 00:04:47] [Info] [Program] 1. FileMoveRule
+[2025-05-19 00:04:47] [Info] [Program] 2. BulkEmailRule
+[2025-05-19 00:04:47] [Info] [Program] 3. DataProcessingRule
+[2025-05-19 00:04:47] [Info] [Program] Enter '1', '2', or '3' to select a rule type, or 'exit' to quit:
+[2025-05-19 00:04:52] [Info] [Program] Configuring DataProcessingRule...
+[2025-05-19 00:04:52] [Info] [Program] Enter rule name (e.g., ProcessDataFromCSV):
+[2025-05-19 00:05:23] [Info] [Program] Enter CSV file path (e.g., data.csv):
+[2025-05-19 00:07:39] [Info] [Program] Rule saved to C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\config.rules.json
+[2025-05-19 00:07:39] [Info] [Program] DataProcessingRule 'ProcessingDataFromCSV_automation' configured successfully.
+[2025-05-19 00:07:39] [Info] [Program] 
+Select rule type to configure (or 'exit' to quit):
+[2025-05-19 00:07:39] [Info] [Program] 1. FileMoveRule
+[2025-05-19 00:07:39] [Info] [Program] 2. BulkEmailRule
+[2025-05-19 00:07:39] [Info] [Program] 3. DataProcessingRule
+[2025-05-19 00:07:39] [Info] [Program] Enter '1', '2', or '3' to select a rule type, or 'exit' to quit:
+[2025-05-19 00:08:04] [Info] [Program] Starting Task Automation Tool
+[2025-05-19 00:08:04] [Info] [RuleConfigLoader] Rule registered: movetofile_desktop
+[2025-05-19 00:08:04] [Info] [RuleConfigLoader] Registered rule: movetofile_desktop (source: C:\Users\USER\Desktop)
+[2025-05-19 00:08:04] [Warning] [RuleConfigLoader] Skipping DataProcessingRule with missing or invalid 'dataPath'
+[2025-05-19 00:08:04] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-19 00:08:04] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-19 00:08:04] [Warning] [Program] Missing or invalid 'filePath' for rule: ProcessProductData
+[2025-05-19 00:08:04] [Info] [Program] Available rules:
+[2025-05-19 00:08:04] [Info] [Program] - movetofile_desktop (FileMoveRule)
+[2025-05-19 00:08:04] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-19 00:08:41] [Warning] [Program] Rule not found: ProcessingDataFromCSV_automation
+[2025-05-19 00:08:41] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-19 00:09:27] [Info] [Program] Starting Task Automation Tool
+[2025-05-19 00:09:27] [Info] [RuleConfigLoader] Rule registered: movetofile_desktop
+[2025-05-19 00:09:27] [Info] [RuleConfigLoader] Registered rule: movetofile_desktop (source: C:\Users\USER\Desktop)
+[2025-05-19 00:09:27] [Warning] [RuleConfigLoader] Skipping DataProcessingRule with missing or invalid 'dataPath'
+[2025-05-19 00:09:27] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-19 00:09:27] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-19 00:09:27] [Warning] [Program] Missing or invalid 'filePath' for rule: ProcessProductData
+[2025-05-19 00:09:27] [Info] [Program] Available rules:
+[2025-05-19 00:09:27] [Info] [Program] - movetofile_desktop (FileMoveRule)
+[2025-05-19 00:09:27] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 

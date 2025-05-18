@@ -40,7 +40,7 @@ try
 
     var engine = RuleConfigLoader.LoadRules(config.Logging);
     var fileService = new FileService(logger);
-    var dataService = new DataService();
+    var dataService = new DataService(logger);
     var emailService = new EmailService(config.Email, logger);
 
     foreach (var rule in config.Rules)
@@ -100,9 +100,35 @@ try
                     logger.LogInfo($"Registered rule: {rule.Name}");
                     break;
 
-                default:
-                    logger.LogWarning($"Unknown rule type: {rule.Type}");
-                    break;
+                case "dataprocessingrule":
+                                var filePath = settings.TryGetValue("filePath", out object? fileObj) && fileObj is string fileValue ? fileValue : null;
+                                if (string.IsNullOrEmpty(filePath))
+                                {
+                                    logger.LogWarning($"Missing or invalid 'filePath' for rule: {rule.Name}");
+                                    continue;
+                                }
+                                if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                    {
+                        logger.LogWarning($"File not found for rule {rule.Name}: {filePath}");
+                        continue;
+                    }
+                                var requiredColumns = settings.TryGetValue("requiredColumns", out object? colsObj) && colsObj is JsonElement colsArray && colsArray.ValueKind == JsonValueKind.Array
+                                    ? colsArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray()!
+                                    : Array.Empty<string>();
+
+                                engine.RegisterRule(new DataProcessingRule(
+                                    dataService,
+                                    filePath,
+                                    requiredColumns as string[],
+                                    logger));
+                                logger.LogInfo($"Registered rule: {rule.Name}");
+                                break;
+
+                            default:
+                                logger.LogWarning($"Unknown rule type: {rule.Type}");
+                                break;
+
+        
             }
         }
         catch (Exception ex)
