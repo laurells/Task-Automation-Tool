@@ -1,6 +1,7 @@
+using AutomationApp.Core;
+using AutomationApp.Services;
 using AutomationApp.Interfaces;
 using AutomationApp.Models;
-using AutomationApp.Services;
 
 namespace AutomationApp.Rules
 {
@@ -10,16 +11,18 @@ namespace AutomationApp.Rules
         private readonly DataService _dataService;
         private readonly EmailConfiguration _config;
         private readonly string _csvPath;
+        private readonly string _name;
 
-        public BulkEmailRule(EmailService emailService, DataService dataService, EmailConfiguration config, string csvPath)
+        public BulkEmailRule(EmailService emailService, DataService dataService, EmailConfiguration config, string csvPath, string name = "BulkEmailRule")
         {
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _csvPath = csvPath ?? throw new ArgumentNullException(nameof(csvPath));
+            _name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
-        public string RuleName => "EmailFromCSV";
+        public string RuleName => _name;
         public bool Enabled { get; set; } = true;
 
         public async Task<bool> ExecuteAsync()

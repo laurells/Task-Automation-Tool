@@ -15,3 +15,6 @@
   }
 [2025-05-18 19:11:44] [Success] [RuleConfigLoader] SUCCESS: Moved: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source\Source.pdf -> C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target\Source.pdf
 [2025-05-18 19:11:44] [Success] [RuleConfigLoader] SUCCESS: Moved: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source\test.txt -> C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target\test.txt
+[2025-05-18 21:44:29] [Error] [Program] ERROR: Fatal error in application startup
+[2025-05-18 21:59:15] [Success] [RuleConfigLoader] SUCCESS: Copied: C:\Users\USER\Desktop\Laurels Echichinwo_Resume-Bloom (1).pdf -> C:\Backup\20250518_215915\Laurels Echichinwo_Resume-Bloom (1).pdf
+[2025-05-18 21:59:15] [Success] [RuleConfigLoader] SUCCESS: Moved: C:\Users\USER\Desktop\Laurels Echichinwo_Resume-Bloom (1).pdf -> C:\Users\USER\Downloads\Laurels Echichinwo_Resume-Bloom (1).pdf

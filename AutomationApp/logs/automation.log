@@ -99,3 +99,50 @@ Enter rule name to test (or 'exit' to quit):
 [2025-05-18 19:17:58] [Warning] [Program] Rule not found: EmailFromCSV
 [2025-05-18 19:17:58] [Info] [Program] 
 Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 21:44:29] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 21:44:29] [Warning] [RuleConfigLoader] Rules configuration file not found: C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\config.rules.json
+[2025-05-18 21:44:29] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 21:44:29] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 21:48:30] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 21:48:30] [Warning] [RuleConfigLoader] Rules configuration file not found: C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\config.rules.json
+[2025-05-18 21:48:30] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 21:48:30] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 21:48:30] [Info] [Program] Starting rule configuration...
+[2025-05-18 21:48:30] [Info] [Program] 
+Select rule type to configure (or 'exit' to quit):
+[2025-05-18 21:48:30] [Info] [Program] 1. FileMoveRule
+[2025-05-18 21:48:30] [Info] [Program] 2. BulkEmailRule
+[2025-05-18 21:48:51] [Info] [Program] Configuring FileMoveRule...
+[2025-05-18 21:48:51] [Info] [Program] Enter rule name (e.g., MoveFilesTo_Target):
+[2025-05-18 21:49:11] [Info] [Program] Enter source directory (e.g., C:\Users\USER\Desktop\Source):
+[2025-05-18 21:49:47] [Info] [Program] Enter target directory (e.g., C:\Users\USER\Desktop\Target):
+[2025-05-18 21:51:10] [Info] [Program] Enter supported extensions (e.g., .pdf,.txt or press Enter for all):
+[2025-05-18 21:51:18] [Info] [Program] Add timestamp to duplicate files? (y/n):
+[2025-05-18 21:51:22] [Info] [Program] Create backups? (y/n):
+[2025-05-18 21:51:31] [Info] [Program] Rule saved to C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\config.rules.json
+[2025-05-18 21:51:31] [Info] [Program] FileMoveRule 'movetofile_desktop' configured successfully.
+[2025-05-18 21:51:31] [Info] [Program] 
+Select rule type to configure (or 'exit' to quit):
+[2025-05-18 21:51:31] [Info] [Program] 1. FileMoveRule
+[2025-05-18 21:51:31] [Info] [Program] 2. BulkEmailRule
+[2025-05-18 21:58:28] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 21:58:28] [Info] [RuleConfigLoader] Rule registered: movetofile_desktop
+[2025-05-18 21:58:28] [Info] [RuleConfigLoader] Registered rule: movetofile_desktop (source: C:\Users\USER\Desktop)
+[2025-05-18 21:58:28] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 21:58:28] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 21:58:28] [Info] [Program] Available rules:
+[2025-05-18 21:58:28] [Info] [Program] - movetofile_desktop (FileMoveRule)
+[2025-05-18 21:58:28] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 21:59:15] [Info] [Program] Testing rule: movetofile_desktop
+[2025-05-18 21:59:15] [Debug] [RuleConfigLoader] Starting FileMoveRule execution with source: C:\Users\USER\Desktop, target: C:\Users\USER\Downloads
+[2025-05-18 21:59:15] [Debug] [RuleConfigLoader] Supported extensions: .pdf
+[2025-05-18 21:59:15] [Debug] [RuleConfigLoader] Add timestamp: False, Backup files: True
+[2025-05-18 21:59:15] [Debug] [RuleConfigLoader] Source is file: False, Target is directory: True
+[2025-05-18 21:59:15] [Info] [RuleConfigLoader] Processing directory: C:\Users\USER\Desktop
+[2025-05-18 21:59:15] [Info] [RuleConfigLoader] Backed up file: C:\Backup\20250518_215915\Laurels Echichinwo_Resume-Bloom (1).pdf
+[2025-05-18 21:59:15] [Info] [RuleConfigLoader] Successfully moved file: Laurels Echichinwo_Resume-Bloom (1).pdf
+[2025-05-18 21:59:15] [Info] [RuleConfigLoader] File processing completed - Processed: 1, Failed: 0
+[2025-05-18 21:59:15] [Info] [Program] Rule test completed successfully: movetofile_desktop
+[2025-05-18 21:59:15] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 

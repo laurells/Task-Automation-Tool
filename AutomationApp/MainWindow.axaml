@@ -1,0 +1,24 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AutomationApp.MainWindow"
+        Title="Task Automation Tool - Rule Configuration"
+        Width="600" Height="400" CanResize="False">
+  <StackPanel Margin="20">
+    <TextBlock Text="Rule Type:" />
+    <ComboBox x:Name="RuleTypeComboBox" SelectedIndex="0">
+      <ComboBoxItem>FileMoveRule</ComboBoxItem>
+      <ComboBoxItem>BulkEmailRule</ComboBoxItem>
+    </ComboBox>
+    <TextBlock Text="Rule Name:" Margin="0,10,0,0" />
+    <TextBox x:Name="RuleNameTextBox" />
+    <TextBlock Text="Source Directory:" Margin="0,10,0,0" x:Name="SourceLabel" />
+    <TextBox x:Name="SourceTextBox" />
+    <TextBlock Text="Target Directory:" Margin="0,10,0,0" x:Name="TargetLabel" />
+    <TextBox x:Name="TargetTextBox" />
+    <TextBlock Text="Extensions (e.g., .pdf,.txt):" Margin="0,10,0,0" x:Name="ExtensionsLabel" />
+    <TextBox x:Name="ExtensionsTextBox" />
+    <CheckBox x:Name="TimestampCheckBox" Content="Add Timestamp" Margin="0,10,0,0" />
+    <CheckBox x:Name="BackupCheckBox" Content="Create Backups" Margin="0,10,0,0" />
+    <Button x:Name="SaveButton" Content="Save Rule" Margin="0,20,0,0" HorizontalAlignment="Left" />
+  </StackPanel>
+</Window>

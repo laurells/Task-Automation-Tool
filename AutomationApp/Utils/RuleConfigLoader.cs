@@ -1,5 +1,5 @@
-using AutomationApp.Services;
 using System.Text.Json;
+using AutomationApp.Services;
 using AutomationApp.Rules;
 using AutomationApp.Core;
 using AutomationApp.Models;
@@ -12,20 +12,23 @@ namespace AutomationApp.Utils
         {
             var logger = new Logger("RuleConfigLoader", loggingConfig);
             var engine = new AutomationEngine(logger);
-            var config = Helpers.LoadEmailConfig(logger);
-            if (config == null)
-            {
-                logger.LogInfo("Failed to load email configuration");
-                return engine;
-            }
             var fileService = new FileService(logger);
             var dataService = new DataService();
 
-            // Convert EmailConfig to EmailConfiguration
-            var emailConfiguration = new AutomationApp.Models.EmailConfiguration
-
+            // Load EmailConfig
+            EmailConfig config;
+            try
             {
+                config = Helpers.LoadEmailConfig(logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to load EmailConfig. Skipping email-related rules.");
+                config = new EmailConfig();
+            }
 
+            var emailConfiguration = new AutomationApp.Models.EmailConfiguration
+            {
                 SmtpHost = config.SmtpHost ?? "smtp.example.com",
                 SmtpPort = config.SmtpPort,
                 UseSmtpSsl = config.UseSmtpSsl,
@@ -36,11 +39,15 @@ namespace AutomationApp.Utils
                 UseImapSsl = config.UseImapSsl
             };
 
+            bool isEmailConfigValid = !string.IsNullOrEmpty(emailConfiguration.SmtpHost) &&
+                                     !string.IsNullOrEmpty(emailConfiguration.Email) &&
+                                     !string.IsNullOrEmpty(emailConfiguration.Password);
+
             var emailService = new EmailService(emailConfiguration, logger);
 
             try
             {
-                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.rule.json");
+                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.rules.json");
                 if (!File.Exists(configPath))
                 {
                     logger.LogWarning($"Rules configuration file not found: {configPath}");
@@ -55,7 +62,7 @@ namespace AutomationApp.Utils
 
                 if (rawRules == null || rawRules.Count == 0)
                 {
-                    logger.LogWarning("No rules found in config.rule.json");
+                    logger.LogWarning("No rules found in config.rules.json");
                     return engine;
                 }
 
@@ -69,8 +76,17 @@ namespace AutomationApp.Utils
                             continue;
                         }
 
-                        var type = typeElement.GetString();
-                        switch (type?.ToLower())
+                        var type = typeElement.GetString()?.ToLower();
+                        var ruleName = raw.TryGetProperty("name", out var nameElement) && !string.IsNullOrEmpty(nameElement.GetString())
+                            ? nameElement.GetString()!
+                            : type switch
+                            {
+                                "filemoverule" => "FileMoveRule",
+                                "bulkemailrule" => "BulkEmailRule",
+                                _ => "UnknownRule"
+                            };
+
+                        switch (type)
                         {
                             case "filemoverule":
                                 if (!raw.TryGetProperty("source", out var sourceElement) || string.IsNullOrEmpty(sourceElement.GetString()))
@@ -91,9 +107,6 @@ namespace AutomationApp.Utils
                                     : Array.Empty<string>();
                                 var addTimestamp = raw.TryGetProperty("addTimestamp", out var tsElement) && tsElement.ValueKind == JsonValueKind.True;
                                 var backupFiles = raw.TryGetProperty("backupFiles", out var bfElement) && bfElement.ValueKind == JsonValueKind.True;
-                                var ruleName = raw.TryGetProperty("name", out var nameElement) && !string.IsNullOrEmpty(nameElement.GetString())
-                                     ? nameElement.GetString()!
-                                     : "FileMoveRule";
 
                                 engine.RegisterRule(new FileMoveRule(
                                     source,
@@ -103,13 +116,16 @@ namespace AutomationApp.Utils
                                     extensions as string[],
                                     addTimestamp,
                                     backupFiles,
-                                    ruleName
-                                    ));
-                                logger.LogInfo($"Registered rule: FileMoveRule (source: {source})");
+                                    ruleName));
                                 logger.LogInfo($"Registered rule: {ruleName} (source: {source})");
                                 break;
 
                             case "bulkemailrule":
+                                if (!isEmailConfigValid)
+                                {
+                                    logger.LogWarning("Skipping BulkEmailRule due to invalid EmailConfiguration");
+                                    continue;
+                                }
                                 if (!raw.TryGetProperty("csvPath", out var csvElement) || string.IsNullOrEmpty(csvElement.GetString()))
                                 {
                                     logger.LogWarning("Skipping BulkEmailRule with missing or invalid 'csvPath'");
@@ -127,8 +143,9 @@ namespace AutomationApp.Utils
                                     emailService,
                                     dataService,
                                     emailConfiguration,
-                                    csvPath));
-                                logger.LogInfo($"Registered rule: BulkEmailRule (csv: {csvPath})");
+                                    csvPath,
+                                    ruleName)); // Updated to pass ruleName
+                                logger.LogInfo($"Registered rule: {ruleName} (csv: {csvPath})");
                                 break;
 
                             default:

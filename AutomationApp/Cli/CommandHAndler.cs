@@ -1,9 +1,6 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AutomationApp.Services;
 using AutomationApp.Core;
+using System.Text.Json;
 
 namespace AutomationApp.Cli
 {
@@ -42,6 +39,9 @@ namespace AutomationApp.Cli
                     case "status":
                         await StatusCommand();
                         break;
+                    case "configure":
+                        await ConfigureCommand();
+                        break;
                     case "help":
                     default:
                         ShowHelp();
@@ -69,6 +69,7 @@ namespace AutomationApp.Cli
             _logger.LogInfo("  automation.exe run");
             _logger.LogInfo("  automation.exe schedule --interval 60");
             _logger.LogInfo("  automation.exe test filemoverule");
+            _logger.LogInfo("  automation.exe configure");
         }
 
         private async Task RunCommand()
@@ -186,6 +187,143 @@ namespace AutomationApp.Cli
                 // logger.LogInformation($"  Failures: {rule.FailureCount}");
             }
             return Task.CompletedTask;
+        }
+
+        private async Task ConfigureCommand()
+        {
+            _logger.LogInfo("Starting rule configuration...");
+            while (true)
+            {
+                _logger.LogInfo("\nSelect rule type to configure (or 'exit' to quit):");
+                _logger.LogInfo("1. FileMoveRule");
+                _logger.LogInfo("2. BulkEmailRule");
+                var input = Console.ReadLine()?.Trim().ToLower();
+
+                if (input == "exit")
+                    break;
+
+                if (input != "1" && input != "2")
+                {
+                    _logger.LogWarning("Invalid selection. Enter '1', '2', or 'exit'.");
+                    continue;
+                }
+
+                if (input == "1")
+                {
+                    await ConfigureFileMoveRule();
+                }
+                else
+                {
+                    await ConfigureBulkEmailRule();
+                }
+            }
+        }
+
+        private async Task ConfigureFileMoveRule()
+        {
+            _logger.LogInfo("Configuring FileMoveRule...");
+            _logger.LogInfo("Enter rule name (e.g., MoveFilesTo_Target):");
+            var name = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                _logger.LogWarning("Rule name cannot be empty.");
+                return;
+            }
+
+            _logger.LogInfo("Enter source directory (e.g., C:\\Users\\USER\\Desktop\\Source):");
+            var source = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(source))
+            {
+                _logger.LogWarning("Source directory cannot be empty.");
+                return;
+            }
+
+            _logger.LogInfo("Enter target directory (e.g., C:\\Users\\USER\\Desktop\\Target):");
+            var target = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(target))
+            {
+                _logger.LogWarning("Target directory cannot be empty.");
+                return;
+            }
+
+            _logger.LogInfo("Enter supported extensions (e.g., .pdf,.txt or press Enter for all):");
+            var extensionsInput = Console.ReadLine()?.Trim();
+            var extensions = string.IsNullOrEmpty(extensionsInput) ? Array.Empty<string>() : extensionsInput.Split(',').Select(e => e.Trim()).ToArray();
+
+            _logger.LogInfo("Add timestamp to duplicate files? (y/n):");
+            var addTimestamp = Console.ReadLine()?.Trim().ToLower() == "y";
+
+            _logger.LogInfo("Create backups? (y/n):");
+            var backupFiles = Console.ReadLine()?.Trim().ToLower() == "y";
+
+            var rule = new
+            {
+                type = "FileMoveRule",
+                name,
+                source,
+                target,
+                supportedExtensions = extensions,
+                addTimestamp,
+                backupFiles
+            };
+
+            await SaveRuleToConfig(rule);
+            _logger.LogInfo($"FileMoveRule '{name}' configured successfully.");
+        }
+
+        private async Task ConfigureBulkEmailRule()
+        {
+            _logger.LogInfo("Configuring BulkEmailRule...");
+            _logger.LogInfo("Enter rule name (e.g., SendEmailsFromCSV):");
+            var name = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                _logger.LogWarning("Rule name cannot be empty.");
+                return;
+            }
+
+            _logger.LogInfo("Enter CSV file path (e.g., recipients.csv):");
+            var csvPath = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(csvPath) || !File.Exists(csvPath))
+            {
+                _logger.LogWarning("CSV file path is invalid or file does not exist.");
+                return;
+            }
+
+            var rule = new
+            {
+                type = "BulkEmailRule",
+                name,
+                csvPath
+            };
+
+            await SaveRuleToConfig(rule);
+            _logger.LogInfo($"BulkEmailRule '{name}' configured successfully.");
+        }
+
+        private async Task SaveRuleToConfig(object rule)
+        {
+            try
+            {
+                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.rules.json");
+                List<object> rules = [];
+
+                if (File.Exists(configPath))
+                {
+                    var json = await File.ReadAllTextAsync(configPath);
+                    rules = JsonSerializer.Deserialize<List<object>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? [];
+                }
+
+                rules.Add(rule);
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var updatedJson = JsonSerializer.Serialize(rules, options);
+                await File.WriteAllTextAsync(configPath, updatedJson);
+                _logger.LogInfo($"Rule saved to {configPath}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to save rule to config.rules.json");
+            }
         }
     }
 }

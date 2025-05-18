@@ -1,0 +1,13 @@
+[
+  {
+    "type": "FileMoveRule",
+    "name": "movetofile_desktop",
+    "source": "C:\\Users\\USER\\Desktop",
+    "target": "C:\\Users\\USER\\Downloads",
+    "supportedExtensions": [
+      ".pdf"
+    ],
+    "addTimestamp": false,
+    "backupFiles": true
+  }
+]
