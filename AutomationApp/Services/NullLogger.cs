@@ -4,7 +4,11 @@ namespace AutomationApp.Services
 {
     public class NullLogger : ILogger
     {
-        public IDisposable BeginScope<TState>(TState state) => null!;
+        // Explicit interface implementation for BeginScope
+        IDisposable? ILogger.BeginScope<TState>(TState state)
+        {
+            return NullScope.Instance;
+        }
 
         public bool IsEnabled(LogLevel logLevel) => false;
 
@@ -41,6 +45,13 @@ namespace AutomationApp.Services
         public void LogTrace(string message)
         {
             // Do nothing
+        }
+
+        // Singleton NullScope to return a no-op IDisposable
+        private class NullScope : IDisposable
+        {
+            public static readonly NullScope Instance = new NullScope();
+            public void Dispose() { }
         }
     }
 }

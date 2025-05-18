@@ -6,6 +6,8 @@ using AutomationApp.Models;
 using AutomationApp.Rules;
 using AutomationApp.Cli;
 using AutomationApp.Core;
+using AutomationApp.Utils;
+using System.Text.Json.Serialization;
 
 namespace AutomationApp
 {
@@ -13,28 +15,36 @@ namespace AutomationApp
     {
         static async Task<int> Main(string[] args)
         {
-            var logger = new Logger("Program");
+            // Load configuration first to get Logging settings
+            var tempConfig = LoadConfiguration(new Logger("Bootstrap", new LoggingConfiguration()));
+            if (tempConfig == null)
+            {
+                Console.WriteLine("Failed to load configuration. Exiting.");
+                Console.ReadKey();
+                return 1;
+            }
+
+            var logger = new Logger("Program", tempConfig.Logging);
             try
             {
                 logger.LogInfo("Starting Task Automation Tool");
 
-                // Load configuration
-                var config = LoadConfiguration();
+                // Load configuration again with proper logger
+                var config = LoadConfiguration(logger);
                 if (config == null)
                 {
-                    logger.LogError(new Exception("Failed to load configuration"));
+                    logger.LogInfo("Failed to load configuration");
                     return 1;
                 }
 
-                // Initialize services
+                // Load rules using RuleConfigLoader
+                var engine = RuleConfigLoader.LoadRules(config.Logging);
+
+                // Register additional rules from appsettings.json (optional, if needed)
                 var fileService = new FileService(logger);
                 var dataService = new DataService();
                 var emailService = new EmailService(config.Email, logger);
 
-                // Initialize engine
-                var engine = new AutomationEngine(logger);
-
-                // Register rules from configuration
                 foreach (var rule in config.Rules)
                 {
                     try
@@ -45,40 +55,40 @@ namespace AutomationApp
                             continue;
                         }
 
+                        Dictionary<string, object> settings = rule.Settings;
                         switch (rule.Type.ToLower())
                         {
                             case "filemoverule":
-                                var settings = rule.Settings;
-                                if (!settings.TryGetValue("source", out string? source) || string.IsNullOrEmpty(source))
+                                if (!settings.TryGetValue("source", out object? sourceObj) || sourceObj is not string source || string.IsNullOrEmpty(source))
                                 {
-                                    logger.LogError($"Missing or invalid 'source' for rule: {rule.Name}");
+                                    logger.LogInfo($"Missing or invalid 'source' for rule: {rule.Name}");
                                     continue;
                                 }
-                                if (!settings.TryGetValue("target", out string? target) || string.IsNullOrEmpty(target))
+                                if (!settings.TryGetValue("target", out object? targetObj) || targetObj is not string target || string.IsNullOrEmpty(target))
                                 {
-                                    logger.LogError($"Missing or invalid 'target' for rule: {rule.Name}");
+                                    logger.LogInfo($"Missing or invalid 'target' for rule: {rule.Name}");
                                     continue;
                                 }
 
-                                var extensions = settings.TryGetValue("supportedExtensions", out string? extStr) && !string.IsNullOrWhiteSpace(extStr)
-                                    ? extStr.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                var extensions = settings.TryGetValue("supportedExtensions", out object? extObj) && extObj is JsonElement extArray && extArray.ValueKind == JsonValueKind.Array
+                                    ? extArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray()!
                                     : Array.Empty<string>();
-                                var addTimestamp = bool.Parse(settings.GetValueOrDefault("addTimestamp", "false"));
-                                var backupFiles = bool.Parse(settings.GetValueOrDefault("backupFiles", "false"));
+                                var addTimestamp = settings.TryGetValue("addTimestamp", out object? tsObj) && tsObj is bool tsValue ? tsValue : false;
+                                var backupFiles = settings.TryGetValue("backupFiles", out object? bfObj) && bfObj is bool bfValue ? bfValue : false;
 
                                 engine.RegisterRule(new FileMoveRule(
                                     source,
                                     target,
                                     fileService,
                                     logger,
-                                    extensions,
+                                    extensions as string[],
                                     addTimestamp,
                                     backupFiles));
                                 logger.LogInfo($"Registered rule: {rule.Name}");
                                 break;
 
                             case "bulkemailrule":
-                                var csvPath = settings.GetValueOrDefault("csvPath", "recipients.csv");
+                                var csvPath = settings.TryGetValue("csvPath", out object? csvObj) && csvObj is string csvValue ? csvValue : "recipients.csv";
                                 if (!File.Exists(csvPath))
                                 {
                                     logger.LogWarning($"CSV file not found for rule {rule.Name}: {csvPath}");
@@ -87,7 +97,7 @@ namespace AutomationApp
                                 engine.RegisterRule(new BulkEmailRule(
                                     emailService,
                                     dataService,
-                                    config.Email, // Use config.Email instead of new EmailConfig()
+                                    config.Email,
                                     csvPath));
                                 logger.LogInfo($"Registered rule: {rule.Name}");
                                 break;
@@ -118,7 +128,7 @@ namespace AutomationApp
             }
         }
 
-        static AppConfiguration? LoadConfiguration()
+        static AppConfiguration? LoadConfiguration(Logger logger)
         {
             try
             {
@@ -126,26 +136,35 @@ namespace AutomationApp
 
                 if (!File.Exists(configPath))
                 {
-                    var config = new AppConfiguration
-                    {
-                        Email = new EmailConfig
-                        {
-                            SmtpHost = "smtp.example.com",
-                            SmtpPort = 587,
-                            Email = "user@example.com",
-                            Password = "password",
-                            UseSmtpSsl = true
-                        },
-                        Rules = new List<AutomationRule>()
-                    };
+                    logger.LogWarning($"Configuration file not found: {configPath}. Creating default configuration.");
+                    var appConfig = new AppConfiguration
+                     {
+                         Email = new EmailConfiguration
+                         {
+                             SmtpHost = "smtp.example.com",
+                             SmtpPort = 587,
+                             Email = "user@example.com",
+                             Password = "password",
+                             UseSmtpSsl = true,
+                             ImapHost = "imap.example.com",
+                             ImapPort = 993,
+                             UseImapSsl = true
+                         },
+                         Rules = new List<AutomationRule>()
+                     };
 
-                    var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+                    var jsonString = JsonSerializer.Serialize(appConfig, new JsonSerializerOptions { WriteIndented = true });
                     File.WriteAllText(configPath, jsonString);
-                    return config;
+                    return appConfig;
                 }
 
                 var json = File.ReadAllText(configPath);
-                var config = JsonSerializer.Deserialize<AppConfiguration>(json);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new JsonStringEnumConverter() }
+                };
+                var config = JsonSerializer.Deserialize<AppConfiguration>(json, options);
 
                 if (config == null)
                 {
@@ -162,7 +181,7 @@ namespace AutomationApp
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error loading configuration: {ex.Message}");
+                logger.LogError(ex, $"Error loading configuration: {ex.Message}");
                 return null;
             }
         }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace AutomationApp.Models
 {
@@ -48,9 +47,9 @@ namespace AutomationApp.Models
     {
         public string Type { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public Dictionary<string, string> Settings { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, object> Settings { get; set; } = new Dictionary<string, object>(); // Changed to object
         public bool Enabled { get; set; } = true;
-        public string Schedule { get; set; } = "* * * * *"; // Cron expression
+        public string Schedule { get; set; } = "* * * * *";
     }
 
     public enum LogLevel
@@ -59,6 +58,7 @@ namespace AutomationApp.Models
         Info,
         Warning,
         Success,
-        Error
+        Error,
+        Trace,
     }
 }

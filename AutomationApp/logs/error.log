@@ -1,0 +1,17 @@
+[2025-05-18 18:17:35] [Error] [RuleConfigLoader] ERROR: Failed to register rule: {
+    "type": "FileMoveRule",
+    "source": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source",
+    "target": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target"
+  }
+[2025-05-18 18:25:46] [Error] [RuleConfigLoader] ERROR: Failed to register rule: {
+    "type": "FileMoveRule",
+    "source": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source",
+    "target": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target"
+  }
+[2025-05-18 18:41:01] [Error] [RuleConfigLoader] ERROR: Failed to register rule: {
+    "type": "FileMoveRule",
+    "source": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source",
+    "target": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target"
+  }
+[2025-05-18 19:11:44] [Success] [RuleConfigLoader] SUCCESS: Moved: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source\Source.pdf -> C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target\Source.pdf
+[2025-05-18 19:11:44] [Success] [RuleConfigLoader] SUCCESS: Moved: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source\test.txt -> C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target\test.txt

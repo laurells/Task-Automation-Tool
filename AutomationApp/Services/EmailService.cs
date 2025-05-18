@@ -1,12 +1,10 @@
 using MailKit.Net.Smtp;
-using MailKit.Net.Imap;
-using MailKit.Security;
 using MimeKit;
 using AutomationApp.Models;
-using AutomationApp.Services;
-using System.Globalization;
-using Microsoft.Extensions.Logging;
+using MailKit.Security;
+using MailKit.Net.Imap;
 using CsvHelper;
+using System.Globalization;
 
 namespace AutomationApp.Services
 {
@@ -17,7 +15,6 @@ namespace AutomationApp.Services
         public string Subject { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
         public List<string> Attachments { get; set; } = new List<string>();
-        
     }
 
     public class EmailTemplate
@@ -34,8 +31,8 @@ namespace AutomationApp.Services
 
         public EmailService(EmailConfiguration config, Logger logger)
         {
-            _config = config;
-            _logger = logger;
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<bool> SendEmailAsync(EmailRecipient recipient, EmailTemplate? template = null)
@@ -52,14 +49,12 @@ namespace AutomationApp.Services
                 message.From.Add(MailboxAddress.Parse(_config.Email));
                 message.To.Add(MailboxAddress.Parse(recipient.Email));
 
-                // Use template if provided, otherwise use recipient's subject/body
                 message.Subject = template?.Subject ?? recipient.Subject;
-                
+
                 var bodyBuilder = new BodyBuilder();
-                
+
                 if (template != null)
                 {
-                    // Replace template variables
                     var processedBody = template.Body;
                     foreach (var variable in template.Variables)
                     {
@@ -72,7 +67,6 @@ namespace AutomationApp.Services
                     bodyBuilder.HtmlBody = recipient.Body;
                 }
 
-                // Add attachments if any
                 foreach (var attachment in recipient.Attachments)
                 {
                     try
@@ -95,21 +89,13 @@ namespace AutomationApp.Services
                 message.Body = bodyBuilder.ToMessageBody();
 
                 using var client = new SmtpClient();
-                try
-                {
-                    await client.ConnectAsync(_config.SmtpHost, _config.SmtpPort, _config.UseSmtpSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(_config.Email, _config.Password);
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
+                await client.ConnectAsync(_config.SmtpHost, _config.SmtpPort, _config.UseSmtpSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(_config.Email, _config.Password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
 
-                    _logger.LogSuccess($"Email sent successfully to {recipient.Email}");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Failed to send email to {recipient.Email}");
-                    throw;
-                }
+                _logger.LogSuccess($"Email sent successfully to {recipient.Email}");
+                return true;
             }
             catch (Exception ex)
             {
@@ -160,14 +146,14 @@ namespace AutomationApp.Services
             {
                 if (!File.Exists(csvPath))
                 {
-                    _logger.LogError(new FileNotFoundException($"CSV file not found: {csvPath}"), $"CSV file not found: {csvPath}");
+                    _logger.LogWarning($"CSV file not found: {csvPath}");
                     return false;
                 }
 
                 var recipients = new List<EmailRecipient>();
                 using var reader = new StreamReader(csvPath);
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-                
+
                 while (await csv.ReadAsync())
                 {
                     var recipient = new EmailRecipient
@@ -195,7 +181,7 @@ namespace AutomationApp.Services
             }
         }
 
-        public async Task SendBulkEmailsAsync(EmailConfig config, List<EmailRecipient> recipients)
+        public async Task SendBulkEmailsAsync(EmailConfiguration config, List<EmailRecipient> recipients)
         {
             using var smtp = new SmtpClient();
             try

@@ -1,0 +1,101 @@
+[2025-05-18 18:17:35] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 18:17:35] [Warning] [RuleConfigLoader] Skipping BulkEmailRule with missing or invalid 'csvPath'
+[2025-05-18 18:17:35] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 18:17:35] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 18:17:35] [Info] [Program] Task Automation Tool - Command Line Interface
+[2025-05-18 18:17:35] [Info] [Program] Available commands:
+[2025-05-18 18:17:35] [Info] [Program]   run          - Execute all automation rules once
+[2025-05-18 18:17:35] [Info] [Program]   schedule     - Start scheduled execution of rules
+[2025-05-18 18:17:35] [Info] [Program]   test         - Test specific rules
+[2025-05-18 18:17:35] [Info] [Program]   status       - Show current status and statistics
+[2025-05-18 18:17:35] [Info] [Program]   help         - Show this help message
+[2025-05-18 18:17:35] [Info] [Program] 
+[2025-05-18 18:17:35] [Info] [Program] Examples:
+[2025-05-18 18:17:35] [Info] [Program]   automation.exe run
+[2025-05-18 18:17:35] [Info] [Program]   automation.exe schedule --interval 60
+[2025-05-18 18:17:35] [Info] [Program]   automation.exe test filemoverule
+[2025-05-18 18:25:46] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 18:25:46] [Warning] [RuleConfigLoader] Skipping BulkEmailRule with missing or invalid 'csvPath'
+[2025-05-18 18:25:46] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 18:25:46] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 18:25:46] [Warning] [Program] No rules configured. Check appsettings.json and CSV files.
+[2025-05-18 18:41:01] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 18:41:01] [Warning] [RuleConfigLoader] Skipping BulkEmailRule with missing or invalid 'csvPath'
+[2025-05-18 18:41:01] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 18:41:01] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 18:41:01] [Warning] [Program] No rules configured. Check appsettings.json and CSV files.
+[2025-05-18 18:42:05] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 18:42:05] [Info] [RuleConfigLoader] Rule registered: MoveFilesTo_Target
+[2025-05-18 18:42:05] [Info] [RuleConfigLoader] Registered rule: FileMoveRule (source: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source)
+[2025-05-18 18:42:05] [Warning] [RuleConfigLoader] Skipping BulkEmailRule with missing or invalid 'csvPath'
+[2025-05-18 18:42:05] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 18:42:05] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 18:42:05] [Info] [Program] Available rules:
+[2025-05-18 18:42:05] [Info] [Program] - MoveFilesTo_Target (FileMoveRule)
+[2025-05-18 18:42:05] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 18:43:14] [Info] [Program] Testing rule: MoveFilesTo_Target
+[2025-05-18 18:43:14] [Debug] [RuleConfigLoader] Starting FileMoveRule execution with source: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source, target: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target
+[2025-05-18 18:43:14] [Debug] [RuleConfigLoader] Supported extensions: 
+[2025-05-18 18:43:14] [Debug] [RuleConfigLoader] Add timestamp: False, Backup files: False
+[2025-05-18 18:43:14] [Debug] [RuleConfigLoader] Source is file: False, Target is directory: True
+[2025-05-18 18:43:14] [Info] [RuleConfigLoader] Processing directory: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source
+[2025-05-18 18:43:14] [Info] [RuleConfigLoader] File processing completed - Processed: 0, Failed: 0
+[2025-05-18 18:43:14] [Info] [Program] Rule test completed successfully: MoveFilesTo_Target
+[2025-05-18 18:43:14] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 18:45:18] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 18:45:18] [Info] [RuleConfigLoader] Rule registered: MoveFilesTo_Target
+[2025-05-18 18:45:18] [Info] [RuleConfigLoader] Registered rule: FileMoveRule (source: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source)
+[2025-05-18 18:45:18] [Warning] [RuleConfigLoader] Skipping BulkEmailRule with missing or invalid 'csvPath'
+[2025-05-18 18:45:18] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 18:45:18] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 18:45:18] [Info] [Program] Available rules:
+[2025-05-18 18:45:18] [Info] [Program] - MoveFilesTo_Target (FileMoveRule)
+[2025-05-18 18:45:18] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 18:45:34] [Info] [Program] Testing rule: MoveFilesTo_Target
+[2025-05-18 18:45:34] [Debug] [RuleConfigLoader] Starting FileMoveRule execution with source: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source, target: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target
+[2025-05-18 18:45:34] [Debug] [RuleConfigLoader] Supported extensions: 
+[2025-05-18 18:45:34] [Debug] [RuleConfigLoader] Add timestamp: False, Backup files: False
+[2025-05-18 18:45:34] [Debug] [RuleConfigLoader] Source is file: False, Target is directory: True
+[2025-05-18 18:45:34] [Info] [RuleConfigLoader] Processing directory: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source
+[2025-05-18 18:45:34] [Info] [RuleConfigLoader] File processing completed - Processed: 0, Failed: 0
+[2025-05-18 18:45:34] [Info] [Program] Rule test completed successfully: MoveFilesTo_Target
+[2025-05-18 18:45:34] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 19:10:27] [Info] [Program] Starting Task Automation Tool
+[2025-05-18 19:10:27] [Info] [RuleConfigLoader] Rule registered: FileMoveRule
+[2025-05-18 19:10:27] [Info] [RuleConfigLoader] Registered rule: FileMoveRule (source: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source)
+[2025-05-18 19:10:27] [Info] [RuleConfigLoader] Registered rule: FileMoveRule (source: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source)
+[2025-05-18 19:10:27] [Warning] [RuleConfigLoader] Skipping BulkEmailRule with missing or invalid 'csvPath'
+[2025-05-18 19:10:27] [Info] [Program] Missing or invalid 'source' for rule: MoveFiles
+[2025-05-18 19:10:27] [Warning] [Program] CSV file not found for rule SendEmails: recipients.csv
+[2025-05-18 19:10:27] [Info] [Program] Available rules:
+[2025-05-18 19:10:27] [Info] [Program] - FileMoveRule (FileMoveRule)
+[2025-05-18 19:10:27] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 19:11:44] [Info] [Program] Testing rule: FileMoveRule
+[2025-05-18 19:11:44] [Debug] [RuleConfigLoader] Starting FileMoveRule execution with source: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source, target: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target
+[2025-05-18 19:11:44] [Debug] [RuleConfigLoader] Supported extensions: 
+[2025-05-18 19:11:44] [Debug] [RuleConfigLoader] Add timestamp: False, Backup files: False
+[2025-05-18 19:11:44] [Debug] [RuleConfigLoader] Source is file: False, Target is directory: True
+[2025-05-18 19:11:44] [Info] [RuleConfigLoader] Processing directory: C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source
+[2025-05-18 19:11:44] [Info] [RuleConfigLoader] Successfully moved file: Source.pdf
+[2025-05-18 19:11:44] [Info] [RuleConfigLoader] Successfully moved file: test.txt
+[2025-05-18 19:11:44] [Info] [RuleConfigLoader] File processing completed - Processed: 2, Failed: 0
+[2025-05-18 19:11:44] [Info] [Program] Rule test completed successfully: FileMoveRule
+[2025-05-18 19:11:44] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 19:14:26] [Warning] [Program] Rule not found: bulkemailrule
+[2025-05-18 19:14:26] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 19:15:01] [Warning] [Program] Rule not found: BulkEmailRule
+[2025-05-18 19:15:01] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 19:16:04] [Warning] [Program] Rule not found: MoveFileTo_Target
+[2025-05-18 19:16:04] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 
+[2025-05-18 19:17:58] [Warning] [Program] Rule not found: EmailFromCSV
+[2025-05-18 19:17:58] [Info] [Program] 
+Enter rule name to test (or 'exit' to quit): 

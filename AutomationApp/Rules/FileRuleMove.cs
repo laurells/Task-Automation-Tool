@@ -1,10 +1,12 @@
-using AutomationApp.Interfaces;
+using AutomationApp.Core;
 using AutomationApp.Services;
+using AutomationApp.Interfaces;
 
 namespace AutomationApp.Rules
 {
     public class FileMoveRule : IAutomationRule
     {
+        public string Name { get; }
         private readonly string _source;
         private readonly string _target;
         private readonly FileService _fileService;
@@ -13,35 +15,47 @@ namespace AutomationApp.Rules
         private readonly bool _addTimestamp;
         private readonly bool _backupFiles;
 
-        public FileMoveRule(string source, string target, FileService fileService, Logger logger, 
-            string[] supportedExtensions = null, bool addTimestamp = true, bool backupFiles = false) 
+        public FileMoveRule(
+            string source,
+            string target,
+            FileService fileService,
+            Logger logger,
+            string[] supportedExtensions = null!,
+            bool addTimestamp = false,
+            bool backupFiles = false,
+            string name = "FileMoveRule")
         {
-            if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(target))
-            {
-                throw new ArgumentException("Source and target paths cannot be null or empty.");
-            }
-
-            if (!Directory.Exists(source))
-            {
-                throw new DirectoryNotFoundException($"Source directory does not exist: {source}");
-            }
-
-            if (!Directory.Exists(target))
-            {
-                Directory.CreateDirectory(target);
-            }
+            if (string.IsNullOrEmpty(source))
+                throw new ArgumentException("Source directory cannot be null or empty.", nameof(source));
+            if (string.IsNullOrEmpty(target))
+                throw new ArgumentException("Target directory cannot be null or empty.", nameof(target));
 
             _source = source;
             _target = target;
-            _fileService = fileService;
-            _logger = logger;
-            _supportedExtensions = supportedExtensions ?? [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".json", ".xml"];
+            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _supportedExtensions = supportedExtensions ?? Array.Empty<string>();
             _addTimestamp = addTimestamp;
             _backupFiles = backupFiles;
+            Name = name;
+
+            if (!Directory.Exists(_source))
+                _logger.LogWarning($"Source directory does not exist: {_source}");
+            if (!Directory.Exists(_target))
+            {
+                try
+                {
+                    Directory.CreateDirectory(_target);
+                    _logger.LogInfo($"Created target directory: {_target}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Failed to create target directory: {_target}");
+                }
+            }
         }
 
-
-        public string RuleName => $"MoveFilesTo_{Path.GetFileName(_target)}";
+        public string RuleName => Name; // Align with Name property
 
         public bool Enabled { get; set; } = true;
 
@@ -52,8 +66,7 @@ namespace AutomationApp.Rules
                 _logger.LogDebug($"Starting FileMoveRule execution with source: {_source}, target: {_target}");
                 _logger.LogDebug($"Supported extensions: {string.Join(", ", _supportedExtensions)}");
                 _logger.LogDebug($"Add timestamp: {_addTimestamp}, Backup files: {_backupFiles}");
-                
-                // Check if source is a file or directory
+
                 bool isSourceFile = File.Exists(_source);
                 bool isTargetDirectory = Directory.Exists(_target);
 
@@ -65,7 +78,7 @@ namespace AutomationApp.Rules
                     return false;
                 }
 
-                if (!isTargetDirectory && !Directory.Exists(_target))
+                if (!isTargetDirectory)
                 {
                     try
                     {
@@ -79,45 +92,38 @@ namespace AutomationApp.Rules
                     }
                 }
 
-                var processedFiles = 0;
-                var failedFiles = 0;
+                int processedFiles = 0;
+                int failedFiles = 0;
 
                 if (isSourceFile)
                 {
-                    // Handle single file move
-                    string sourceExt = Path.GetExtension(_source).ToLower();
-                    if (_supportedExtensions.Contains(sourceExt))
+                    string sourceExt = Path.GetExtension(_source).ToLowerInvariant();
+                    if (_supportedExtensions.Length == 0 || _supportedExtensions.Contains(sourceExt))
                     {
                         try
                         {
                             string dest = Path.Combine(_target, Path.GetFileName(_source));
-                            _logger.LogDebug($"Attempting to move file: {_source} to {dest}");
-                            
-                            // Check if file already exists in target
                             if (File.Exists(dest))
                             {
-                                _logger.LogDebug($"Destination file exists: {dest}");
                                 if (await _fileService.CompareFileHashesAsync(_source, dest))
                                 {
                                     _logger.LogInfo($"Skipping duplicate file: {Path.GetFileName(_source)}");
                                     return true;
                                 }
-                                
                                 if (_addTimestamp)
                                 {
                                     var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                                    dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(_source)}_{timestamp}{Path.GetExtension(_source)}");
-                                    _logger.LogDebug($"Using timestamped destination: {dest}");
+                                    dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(_source)}_{timestamp}{sourceExt}");
                                 }
                             }
 
                             if (_backupFiles)
                             {
-                                var backupDest = Path.Combine(_target, "backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                                var backupDest = Path.Combine("C:\\Backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
                                 Directory.CreateDirectory(backupDest);
                                 var backupFile = Path.Combine(backupDest, Path.GetFileName(_source));
-                                _logger.LogDebug($"Creating backup of file: {_source} to {backupFile}");
                                 await _fileService.CopyFileAsync(_source, backupFile);
+                                _logger.LogInfo($"Backed up file: {backupFile}");
                             }
 
                             await _fileService.MoveFileAsync(_source, dest);
@@ -138,45 +144,35 @@ namespace AutomationApp.Rules
                 else
                 {
                     _logger.LogInfo($"Processing directory: {_source}");
-                    // Handle directory move
-                    foreach (var extension in _supportedExtensions)
+                    foreach (var file in Directory.EnumerateFiles(_source))
                     {
-                        _logger.LogDebug($"Searching for files with extension: {extension}");
-                        var files = Directory.GetFiles(_source, $"*{extension}");
-                        _logger.LogDebug($"Found {files.Length} files with extension {extension}");
-                        
-                        foreach (var file in files)
+                        string extension = Path.GetExtension(file).ToLowerInvariant();
+                        if (_supportedExtensions.Length == 0 || _supportedExtensions.Contains(extension))
                         {
                             try
                             {
                                 string dest = Path.Combine(_target, Path.GetFileName(file));
-                                _logger.LogDebug($"Attempting to move file: {file} to {dest}");
-                                
-                                // Check if file already exists in target
                                 if (File.Exists(dest))
                                 {
-                                    _logger.LogDebug($"Destination file exists: {dest}");
                                     if (await _fileService.CompareFileHashesAsync(file, dest))
                                     {
                                         _logger.LogInfo($"Skipping duplicate file: {Path.GetFileName(file)}");
                                         continue;
                                     }
-                                    
                                     if (_addTimestamp)
                                     {
                                         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                                        dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(file)}_{timestamp}{Path.GetExtension(file)}");
-                                        _logger.LogDebug($"Using timestamped destination: {dest}");
+                                        dest = Path.Combine(_target, $"{Path.GetFileNameWithoutExtension(file)}_{timestamp}{extension}");
                                     }
                                 }
 
                                 if (_backupFiles)
                                 {
-                                    var backupDest = Path.Combine(_target, "backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                                    var backupDest = Path.Combine("C:\\Backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
                                     Directory.CreateDirectory(backupDest);
                                     var backupFile = Path.Combine(backupDest, Path.GetFileName(file));
-                                    _logger.LogDebug($"Creating backup of file: {file} to {backupFile}");
                                     await _fileService.CopyFileAsync(file, backupFile);
+                                    _logger.LogInfo($"Backed up file: {backupFile}");
                                 }
 
                                 await _fileService.MoveFileAsync(file, dest);
@@ -210,7 +206,6 @@ namespace AutomationApp.Rules
                 {
                     _logger.LogWarning("Source or target directory path is empty");
                     return Task.FromResult(false);
-    
                 }
 
                 if (!Directory.Exists(_source))
@@ -246,7 +241,7 @@ namespace AutomationApp.Rules
         {
             try
             {
-                var backupDir = Path.Combine(_target, "backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
+                var backupDir = Path.Combine("C:\\Backup", DateTime.Now.ToString("yyyyMMdd_HHmmss"));
                 Directory.CreateDirectory(backupDir);
 
                 var files = Directory.GetFiles(_source);

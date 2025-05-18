@@ -46,3 +46,5 @@ C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Micros
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\appsettings.json
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\config.rule.json

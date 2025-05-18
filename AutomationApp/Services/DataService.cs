@@ -32,11 +32,24 @@ namespace AutomationApp.Services
         // CSV -> List<T>
         public List<T> ReadCsv<T>(string path)
         {
-            using var reader = new StreamReader(path);
-            using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
-            return new List<T>(csv.GetRecords<T>());
-        }
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                Console.WriteLine($"CSV file not found: {path}");
+                return new List<T>();
+            }
 
+            try
+            {
+                using var reader = new StreamReader(path);
+                using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
+                return new List<T>(csv.GetRecords<T>());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading CSV {path}: {ex.Message}");
+                return new List<T>();
+            }
+        }
         // List<T> -> CSV
         public static void WriteCsv<T>(string path, IEnumerable<T> data)
         {
