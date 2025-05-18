@@ -2,6 +2,8 @@ using AutomationApp.Interfaces;
 using AutomationApp.Models;
 using AutomationApp.Services;
 
+namespace AutomationApp.Rules;
+
 public class BulkEmailRule(EmailService emailService, DataService dataService, EmailConfig config) : IAutomationRule
 {
     public string RuleName => "EmailFromCSV";
@@ -12,8 +14,10 @@ public class BulkEmailRule(EmailService emailService, DataService dataService, E
 
     public async Task<bool> ExecuteAsync()
     {
-        var recipients = DataService.ReadCsv<EmailRecipient>("recipients.csv");
+        // Read recipients from CSV file and send emails
+        var recipients = _dataService.ReadCsv<EmailRecipient>("recipients.csv");
         await _emailService.SendBulkEmailsAsync(_config, recipients);
         return true;
     }
 }
+

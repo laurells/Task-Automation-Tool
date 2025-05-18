@@ -1,96 +1,113 @@
-using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutomationApp.Services;
+using AutomationApp.Core;
 
 namespace AutomationApp.Cli
 {
     public class CommandHandler
     {
-        public static async Task HandleAsync(string[] args, AutomationEngine engine, ILogger logger)
+        private readonly AutomationEngine _engine;
+        private readonly Logger _logger;
+
+        public CommandHandler(AutomationEngine engine, Logger logger)
+        {
+            _engine = engine ?? throw new ArgumentNullException(nameof(engine));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        public async Task HandleAsync(string[] args)
         {
             try
             {
                 if (args.Length == 0)
                 {
-                    ShowHelp(logger);
+                    ShowHelp();
                     return;
                 }
 
                 switch (args[0].ToLower())
                 {
                     case "run":
-                        await RunCommand(engine, logger);
+                        await RunCommand();
                         break;
                     case "schedule":
-                        await ScheduleCommand(engine, args, logger);
+                        await ScheduleCommand(args);
                         break;
                     case "test":
-                        await TestCommand(engine, logger);
+                        await TestCommand();
                         break;
                     case "status":
-                        await StatusCommand(engine, logger);
+                        await StatusCommand();
                         break;
                     case "help":
                     default:
-                        ShowHelp(logger);
+                        ShowHelp();
                         break;
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error processing command");
-                ShowHelp(logger);
+                _logger.LogError(ex, "Error processing command");
+                ShowHelp();
             }
         }
 
-        private static void ShowHelp(ILogger logger)
+        private void ShowHelp()
         {
-            logger.LogInformation("Task Automation Tool - Command Line Interface");
-            logger.LogInformation("Available commands:");
-            logger.LogInformation("  run          - Execute all automation rules once");
-            logger.LogInformation("  schedule     - Start scheduled execution of rules");
-            logger.LogInformation("  test         - Test specific rules");
-            logger.LogInformation("  status       - Show current status and statistics");
-            logger.LogInformation("  help         - Show this help message");
-            logger.LogInformation("");
-            logger.LogInformation("Examples:");
-            logger.LogInformation("  automation.exe run");
-            logger.LogInformation("  automation.exe schedule --interval 60");
-            logger.LogInformation("  automation.exe test filemoverule");
+            _logger.LogInfo("Task Automation Tool - Command Line Interface");
+            _logger.LogInfo("Available commands:");
+            _logger.LogInfo("  run          - Execute all automation rules once");
+            _logger.LogInfo("  schedule     - Start scheduled execution of rules");
+            _logger.LogInfo("  test         - Test specific rules");
+            _logger.LogInfo("  status       - Show current status and statistics");
+            _logger.LogInfo("  help         - Show this help message");
+            _logger.LogInfo("");
+            _logger.LogInfo("Examples:");
+            _logger.LogInfo("  automation.exe run");
+            _logger.LogInfo("  automation.exe schedule --interval 60");
+            _logger.LogInfo("  automation.exe test filemoverule");
         }
 
-        private static async Task RunCommand(AutomationEngine engine, ILogger logger)
+        private async Task RunCommand()
         {
-            logger.LogInformation("Starting rule execution...");
-            var result = await engine.ExecuteAllAsync();
-            logger.LogInformation($"Rule execution completed. Success: {result}");
+            _logger.LogInfo("Starting rule execution...");
+            var result = await _engine.ExecuteAllAsync();
+            _logger.LogInfo($"Rule execution completed. Success: {result}");
         }
 
-        private static async Task ScheduleCommand(AutomationEngine engine, string[] args, ILogger logger)
+        private async Task ScheduleCommand(string[] args)
         {
             int interval = 30; // default 30 seconds
-            
+
             for (int i = 1; i < args.Length; i++)
             {
-                if (args[i].StartsWith("--interval"))
+                if (string.IsNullOrEmpty(args[i]) || !args[i].StartsWith("--interval"))
                 {
-                    if (i + 1 < args.Length && int.TryParse(args[i + 1], out var parsedInterval))
-                    {
-                        interval = parsedInterval;
-                    }
-                    else
-                    {
-                        logger.LogError("Invalid interval value");
-                        return;
-                    }
+                    continue;
+                }
+                if (i + 1 < args.Length && int.TryParse(args[i + 1], out var parsedInterval))
+                {
+                    interval = parsedInterval;
+                }
+                else
+                {
+                    _logger.LogWarning("Invalid interval value");
+                    return;
                 }
             }
 
-            var scheduler = new AutomationScheduler(engine, interval);
-            logger.LogInformation($"Starting scheduler with interval: {interval} seconds");
+            var scheduler = new AutomationScheduler(_engine, interval, _logger);
+            _logger.LogInfo($"Scheduler will run every {interval} seconds");
+            _logger.LogInfo($"Starting scheduler with interval: {interval} seconds");
             scheduler.Start();
 
             // Wait for Ctrl+C or other termination signal
             var cts = new CancellationTokenSource();
-            Console.CancelKeyPress += (s, e) => {
+            Console.CancelKeyPress += (s, e) =>
+            {
                 e.Cancel = true;
                 cts.Cancel();
             };
@@ -101,64 +118,70 @@ namespace AutomationApp.Cli
             }
             catch (OperationCanceledException)
             {
-                logger.LogInformation("Stopping scheduler...");
+                _logger.LogInfo("Stopping scheduler...");
                 scheduler.Stop();
             }
         }
 
-        private static async Task TestCommand(AutomationEngine engine, ILogger logger)
+        private async Task TestCommand()
         {
-            if (engine.Rules.Count == 0)
+            if (_engine.Rules.Count == 0)
             {
-                logger.LogError("No rules configured");
+                _logger.LogWarning("No rules configured. Check appsettings.json and CSV files.");
                 return;
             }
 
-            logger.LogInformation("Available rules:");
-            foreach (var rule in engine.Rules)
+            _logger.LogInfo("Available rules:");
+            foreach (var rule in _engine.Rules)
             {
-                logger.LogInformation($"- {rule.RuleName} ({rule.GetType().Name})");
+                _logger.LogInfo($"- {rule.RuleName} ({rule.GetType().Name})");
             }
 
             while (true)
             {
-                logger.LogInformation("\nEnter rule name to test (or 'exit' to quit): ");
+                _logger.LogInfo("\nEnter rule name to test (or 'exit' to quit): ");
                 var input = Console.ReadLine();
 
                 if (string.Equals(input, "exit", StringComparison.OrdinalIgnoreCase))
                     break;
 
-                var rule = engine.Rules.FirstOrDefault(r => string.Equals(r.RuleName, input, StringComparison.OrdinalIgnoreCase));
-                if (rule == null)
+                if (string.IsNullOrEmpty(input))
                 {
-                    logger.LogError($"Rule not found: {input}");
+                    _logger.LogWarning("Rule name cannot be empty");
                     continue;
                 }
 
-                logger.LogInformation($"Testing rule: {rule.RuleName}");
+                var rule = _engine.Rules.FirstOrDefault(r => string.Equals(r.RuleName, input, StringComparison.OrdinalIgnoreCase));
+                if (rule == null)
+                {
+                    _logger.LogWarning($"Rule not found: {input}");
+                    continue;
+                }
+
+                _logger.LogInfo($"Testing rule: {rule.RuleName}");
                 try
                 {
                     await rule.ExecuteAsync();
-                    logger.LogInformation($"Rule test completed successfully: {rule.RuleName}");
+                    _logger.LogInfo($"Rule test completed successfully: {rule.RuleName}");
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, $"Rule test failed: {rule.RuleName}");
+                    _logger.LogError(ex, $"Rule test failed: {rule.RuleName}");
                 }
             }
         }
 
-        private static Task StatusCommand(AutomationEngine engine, ILogger logger)
+        private Task StatusCommand()
         {
-            logger.LogInformation("Task Automation Tool Status");
-            logger.LogInformation($"Rules configured: {engine.Rules.Count}");
+            _logger.LogInfo("Task Automation Tool Status");
+            _logger.LogInfo($"Rules configured: {_engine.Rules.Count}");
 
-            foreach (var rule in engine.Rules)
+            foreach (var rule in _engine.Rules)
             {
-                logger.LogInformation($"- {rule.RuleName}");
-                logger.LogInformation($"  Type: {rule.GetType().Name}");
-                // logger.LogInformation($"  Status: {(rule.Enabled ? "Enabled" : "Disabled")}");
-                // logger.LogInformation($"  Last Execution: {rule.LastExecutionTime ?? DateTime.MinValue}");
+                _logger.LogInfo($"- {rule.RuleName}");
+                _logger.LogInfo($"  Type: {rule.GetType().Name}");
+                _logger.LogInfo($"  Status: {(rule.Enabled ? "Enabled" : "Disabled")}");
+                // _logger.LogInfo($"  Last Execution: {rule.LastExecutionTime ?? DateTime.MinValue}");
                 // logger.LogInformation($"  Success: {rule.SuccessCount}");
                 // logger.LogInformation($"  Failures: {rule.FailureCount}");
             }
@@ -166,3 +189,4 @@ namespace AutomationApp.Cli
         }
     }
 }
+

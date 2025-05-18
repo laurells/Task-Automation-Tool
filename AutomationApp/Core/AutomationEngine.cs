@@ -1,19 +1,13 @@
 using AutomationApp.Interfaces;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using AutomationApp.Services;
 
-public class AutomationEngine
+namespace AutomationApp.Core;
+public class AutomationEngine(Logger logger)
 {
-    private readonly List<IAutomationRule> _rules = new List<IAutomationRule>();
-    private readonly Logger _logger;
-    private readonly Dictionary<string, RuleStatistics> _ruleStats = new Dictionary<string, RuleStatistics>();
-    private readonly object _statsLock = new object();
-
-    public AutomationEngine(Logger logger)
-    {
-        _logger = logger;
-    }
+    private readonly List<IAutomationRule> _rules = [];
+    private readonly Logger _logger = logger;
+    private readonly Dictionary<string, RuleStatistics> _ruleStats = [];
+    private readonly object _statsLock = new();
 
     public List<IAutomationRule> Rules => _rules;
 

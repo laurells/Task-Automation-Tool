@@ -2,8 +2,8 @@
   "SmtpHost": "smtp.gmail.com",
   "SmtpPort": 587,
   "UseSmtpSsl": true,
-  "Email": "laurels.echichinwojr@gmail.com",
-  "Password": "L@urels81156357.",
+  "Email": "test@example.com",
+  "Password": "testpassword",
   "ImapHost": "imap.gmail.com",
   "ImapPort": 993,
   "UseImapSsl": true

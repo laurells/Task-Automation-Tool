@@ -1,0 +1,23 @@
+{
+    "Email":  {
+                  "Username":  "test@example.com",
+                  "SmtpHost":  "smtp.gmail.com",
+                  "SmtpPort":  587,
+                  "Password":  "testpassword"
+              },
+    "Rules":  [
+                  {
+                      "Settings":  {
+                                       "backupFiles":  false,
+                                       "target":  "C:\\TestTarget",
+                                       "addTimestamp":  false,
+                                       "source":  "C:\\TestSource",
+                                       "supportedExtensions":  [
+                                                                   ".pdf"
+                                                               ]
+                                   },
+                      "Type":  "FileMoveRule",
+                      "Enabled":  true
+                  }
+              ]
+}

@@ -1,11 +1,11 @@
 [
   {
     "type": "FileMoveRule",
-    "source": "C:/Watch",
-    "target": "C:/Sorted"
+    "source": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source",
+    "target": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target"
   },
   {
     "type": "BulkEmailRule",
-    "csv": "recipients.csv"
+    "csv": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Recipents.csv"
   }
 ]

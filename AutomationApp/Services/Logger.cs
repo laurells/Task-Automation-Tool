@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.IO;
 
+namespace AutomationApp.Services;
 public class Logger : ILogger
 {
     private readonly ILogger _innerLogger;
@@ -17,7 +18,7 @@ public class Logger : ILogger
         _logDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TaskAutomationTool", "Logs");
         _logFile = Path.Combine(_logDirectory, "automation.log");
         _errorFile = Path.Combine(_logDirectory, "error.log");
-        _innerLogger = innerLogger ?? NullLogger.Instance;
+        _innerLogger = innerLogger;
         // _innerLogger = innerLogger ?? new NullLogger();
     }
 

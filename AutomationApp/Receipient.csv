@@ -1,3 +1,3 @@
-Name,Email,Message
-Alice,laurels.echichinwojr@gmail.com,Hi Alice, this is your reminder!
-Bob,laurelsinc.tech@gmail.com,Hi Bob, here’s your report!
+Name,Email,Subject,Body
+John Doe,john.doe@example.com,Test Email,This is a test email.
+Jane Smith,jane.smith@example.com,Test Email,This is another test email.

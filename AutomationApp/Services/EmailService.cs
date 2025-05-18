@@ -3,10 +3,9 @@ using MailKit.Net.Imap;
 using MailKit.Security;
 using MimeKit;
 using AutomationApp.Models;
-using System.Text.RegularExpressions;
-using System.IO;
 using AutomationApp.Services;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using CsvHelper;
 
 namespace AutomationApp.Services
@@ -18,6 +17,7 @@ namespace AutomationApp.Services
         public string Subject { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
         public List<string> Attachments { get; set; } = new List<string>();
+        
     }
 
     public class EmailTemplate

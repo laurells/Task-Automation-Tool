@@ -7,6 +7,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using ClosedXML.Excel;
 using System.Globalization;
+using AutomationApp.Services;
 
 namespace AutomationApp.Services
 {
@@ -29,7 +30,7 @@ namespace AutomationApp.Services
     {
 
         // CSV -> List<T>
-        public static List<T> ReadCsv<T>(string path)
+        public List<T> ReadCsv<T>(string path)
         {
             using var reader = new StreamReader(path);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));

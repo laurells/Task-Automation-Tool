@@ -1,6 +1,5 @@
 using AutomationApp.Interfaces;
 using AutomationApp.Services;
-using Microsoft.Extensions.Logging;
 
 namespace AutomationApp.Rules
 {
@@ -9,12 +8,12 @@ namespace AutomationApp.Rules
         private readonly string _source;
         private readonly string _target;
         private readonly FileService _fileService;
-        private readonly ILogger _logger;
+        private readonly Logger _logger;
         private readonly string[] _supportedExtensions;
         private readonly bool _addTimestamp;
         private readonly bool _backupFiles;
 
-        public FileMoveRule(string source, string target, FileService fileService, ILogger logger, 
+        public FileMoveRule(string source, string target, FileService fileService, Logger logger, 
             string[] supportedExtensions = null, bool addTimestamp = true, bool backupFiles = false) 
         {
             if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(target))
@@ -36,7 +35,7 @@ namespace AutomationApp.Rules
             _target = target;
             _fileService = fileService;
             _logger = logger;
-            _supportedExtensions = supportedExtensions ?? new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".json", ".xml" };
+            _supportedExtensions = supportedExtensions ?? [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".csv", ".json", ".xml"];
             _addTimestamp = addTimestamp;
             _backupFiles = backupFiles;
         }
@@ -62,7 +61,7 @@ namespace AutomationApp.Rules
 
                 if (!isSourceFile && !Directory.Exists(_source))
                 {
-                    _logger.LogError($"Source path not found: {_source}");
+                    _logger.LogWarning($"Source path not found: {_source}");
                     return false;
                 }
 
@@ -71,7 +70,7 @@ namespace AutomationApp.Rules
                     try
                     {
                         Directory.CreateDirectory(_target);
-                        _logger.LogInformation($"Created target directory: {_target}");
+                        _logger.LogInfo($"Created target directory: {_target}");
                     }
                     catch (Exception ex)
                     {
@@ -100,7 +99,7 @@ namespace AutomationApp.Rules
                                 _logger.LogDebug($"Destination file exists: {dest}");
                                 if (await _fileService.CompareFileHashesAsync(_source, dest))
                                 {
-                                    _logger.LogInformation($"Skipping duplicate file: {Path.GetFileName(_source)}");
+                                    _logger.LogInfo($"Skipping duplicate file: {Path.GetFileName(_source)}");
                                     return true;
                                 }
                                 
@@ -123,7 +122,7 @@ namespace AutomationApp.Rules
 
                             await _fileService.MoveFileAsync(_source, dest);
                             processedFiles++;
-                            _logger.LogInformation($"Successfully moved file: {Path.GetFileName(_source)}");
+                            _logger.LogInfo($"Successfully moved file: {Path.GetFileName(_source)}");
                         }
                         catch (Exception ex)
                         {
@@ -138,7 +137,7 @@ namespace AutomationApp.Rules
                 }
                 else
                 {
-                    _logger.LogInformation($"Processing directory: {_source}");
+                    _logger.LogInfo($"Processing directory: {_source}");
                     // Handle directory move
                     foreach (var extension in _supportedExtensions)
                     {
@@ -159,7 +158,7 @@ namespace AutomationApp.Rules
                                     _logger.LogDebug($"Destination file exists: {dest}");
                                     if (await _fileService.CompareFileHashesAsync(file, dest))
                                     {
-                                        _logger.LogInformation($"Skipping duplicate file: {Path.GetFileName(file)}");
+                                        _logger.LogInfo($"Skipping duplicate file: {Path.GetFileName(file)}");
                                         continue;
                                     }
                                     
@@ -182,7 +181,7 @@ namespace AutomationApp.Rules
 
                                 await _fileService.MoveFileAsync(file, dest);
                                 processedFiles++;
-                                _logger.LogInformation($"Successfully moved file: {Path.GetFileName(file)}");
+                                _logger.LogInfo($"Successfully moved file: {Path.GetFileName(file)}");
                             }
                             catch (Exception ex)
                             {
@@ -193,7 +192,7 @@ namespace AutomationApp.Rules
                     }
                 }
 
-                _logger.LogInformation($"File processing completed - Processed: {processedFiles}, Failed: {failedFiles}");
+                _logger.LogInfo($"File processing completed - Processed: {processedFiles}, Failed: {failedFiles}");
                 return failedFiles == 0;
             }
             catch (Exception ex)
@@ -209,13 +208,14 @@ namespace AutomationApp.Rules
             {
                 if (string.IsNullOrEmpty(_source) || string.IsNullOrEmpty(_target))
                 {
-                    _logger.LogError("Source or target directory path is empty");
+                    _logger.LogWarning("Source or target directory path is empty");
                     return Task.FromResult(false);
+    
                 }
 
                 if (!Directory.Exists(_source))
                 {
-                    _logger.LogError($"Source directory does not exist: {_source}");
+                    _logger.LogWarning($"Source directory does not exist: {_source}");
                     return Task.FromResult(false);
                 }
 
@@ -224,7 +224,7 @@ namespace AutomationApp.Rules
                     try
                     {
                         Directory.CreateDirectory(_target);
-                        _logger.LogInformation($"Created target directory: {_target}");
+                        _logger.LogInfo($"Created target directory: {_target}");
                     }
                     catch (Exception ex)
                     {
@@ -256,7 +256,7 @@ namespace AutomationApp.Rules
                     {
                         var dest = Path.Combine(backupDir, Path.GetFileName(file));
                         await _fileService.CopyFileAsync(file, dest);
-                        _logger.LogInformation($"Backed up file: {Path.GetFileName(file)}");
+                        _logger.LogInfo($"Backed up file: {Path.GetFileName(file)}");
                     }
                     catch (Exception ex)
                     {

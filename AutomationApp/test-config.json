@@ -1,0 +1,52 @@
+{
+    "Logging":  {
+                    "Console":  {
+                                    "Enabled":  true
+                                },
+                    "Level":  "Debug",
+                    "File":  {
+                                 "Path":  "logs/utomation.log",
+                                 "Enabled":  true
+                             }
+                },
+    "Email":  {
+                  "ImapPort":  993,
+                  "UseImapSsl":  true,
+                  "Password":  "your-password",
+                  "UseSmtpSsl":  true,
+                  "ImapHost":  "imap.example.com",
+                  "SmtpPort":  587,
+                  "SmtpHost":  "smtp.example.com",
+                  "Email":  "your-email@example.com"
+              },
+    "Version":  "1.0",
+    "Rules":  [
+                  {
+                      "Settings":  {
+                                       "backupFiles":  false,
+                                       "target":  "C:\\Sorted",
+                                       "addTimestamp":  false,
+                                       "source":  "C:\\Watch",
+                                       "supportedExtensions":  [
+                                                                   ".pdf",
+                                                                   ".doc",
+                                                                   ".docx",
+                                                                   ".xls",
+                                                                   ".xlsx",
+                                                                   ".txt"
+                                                               ]
+                                   },
+                      "Name":  "MovePDFsToSorted",
+                      "Type":  "FileMoveRule",
+                      "Enabled":  true
+                  }
+              ],
+    "Services":  {
+                     "FileService":  {
+                                         "MaxRetries":  3,
+                                         "RetryDelayMs":  1000,
+                                         "HashAlgorithm":  "SHA256",
+                                         "Enabled":  true
+                                     }
+                 }
+}
