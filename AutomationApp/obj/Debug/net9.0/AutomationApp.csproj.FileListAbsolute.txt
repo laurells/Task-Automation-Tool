@@ -72,3 +72,5 @@ C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Micros
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.IO.RecyclableMemoryStream.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\System.Security.Cryptography.Xml.dll
 C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Security.Cryptography.Pkcs.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\System.Linq.Async.dll

@@ -233,3 +233,37 @@ Enter rule name to test (or 'exit' to quit):
 [2025-05-19 00:09:27] [Info] [Program] - movetofile_desktop (FileMoveRule)
 [2025-05-19 00:09:27] [Info] [Program] 
 Enter rule name to test (or 'exit' to quit): 
+[2025-05-19 13:27:37] [Info] [Program] Starting Task Automation Tool
+[2025-05-19 13:27:37] [Info] [RuleConfigLoader] Successfully loaded email configuration from C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\emailsettings.json
+[2025-05-19 13:27:37] [Info] [RuleConfigLoader] Successfully loaded EmailConfiguration
+[2025-05-19 13:31:02] [Info] [Program] Starting Task Automation Tool
+[2025-05-19 13:31:02] [Info] [RuleConfigLoader] Successfully loaded email configuration from C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\emailsettings.json
+[2025-05-19 13:31:02] [Info] [RuleConfigLoader] Successfully loaded EmailConfiguration
+[2025-05-19 13:31:02] [Warning] [RuleConfigLoader] Skipping FileMoveRule 'MoveFiles' with missing or invalid 'source'
+[2025-05-19 13:31:02] [Warning] [RuleConfigLoader] Skipping BulkEmailRule 'SendEmails' with missing or invalid 'csvPath'
+[2025-05-19 13:31:02] [Warning] [RuleConfigLoader] Skipping DataProcessingRule 'ProcessProductData' with missing or invalid 'dataPath'
+[2025-05-19 13:31:02] [Info] [Program] Rules loaded successfully
+[2025-05-19 13:31:02] [Info] [Program] Running CLI command
+[2025-05-19 13:31:02] [Info] [CLI] Starting rule execution...
+[2025-05-19 13:31:02] [Info] [CLI] Rule execution completed. Success: True
+[2025-05-19 13:31:02] [Info] [Program] CLI execution completed
+[2025-05-19 13:42:28] [Info] [Program] Starting Task Automation Tool
+[2025-05-19 13:42:28] [Info] [RuleConfigLoader] Successfully loaded email configuration from C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\emailsettings.json
+[2025-05-19 13:42:28] [Info] [RuleConfigLoader] Successfully loaded EmailConfiguration
+[2025-05-19 13:42:28] [Warning] [RuleConfigLoader] Skipping FileMoveRule 'MoveFiles' with missing or invalid 'source'
+[2025-05-19 13:42:29] [Warning] [RuleConfigLoader] Skipping BulkEmailRule 'SendEmails' with missing or invalid 'csvPath'
+[2025-05-19 13:42:29] [Warning] [RuleConfigLoader] Skipping DataProcessingRule 'ProcessProductData' with missing or invalid 'dataPath'
+[2025-05-19 13:42:29] [Info] [Program] Rules loaded successfully
+[2025-05-19 13:42:29] [Info] [Program] Running CLI command
+[2025-05-19 13:42:29] [Info] [CLI] Starting rule execution...
+[2025-05-19 13:42:29] [Info] [CLI] Rule execution completed. Success: True
+[2025-05-19 13:42:29] [Info] [Program] CLI execution completed
+[2025-05-19 13:48:49] [Info] [Program] Starting Task Automation Tool
+[2025-05-19 13:48:50] [Info] [RuleConfigLoader] Successfully loaded email configuration from C:\Users\USER\Desktop\Task-Automation-Tool\AutomationApp\bin\Debug\net9.0\emailsettings.json
+[2025-05-19 13:48:50] [Info] [RuleConfigLoader] Successfully loaded EmailConfiguration
+[2025-05-19 13:48:50] [Warning] [RuleConfigLoader] No rules found in configuration file
+[2025-05-19 13:48:50] [Info] [Program] Rules loaded successfully
+[2025-05-19 13:48:50] [Info] [Program] Running CLI command
+[2025-05-19 13:48:50] [Info] [CLI] Starting rule execution...
+[2025-05-19 13:48:50] [Info] [CLI] Rule execution completed. Success: True
+[2025-05-19 13:48:50] [Info] [Program] CLI execution completed

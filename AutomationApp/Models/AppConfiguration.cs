@@ -34,7 +34,7 @@ namespace AutomationApp.Models
         /// <summary>
         /// Gets the path to the rules configuration file.
         /// </summary>
-        public string RulesConfigPath { get; init; } = "config.rules.json";
+        public string RulesConfigPath { get; init; } = "config.rule.json";
 
         public AppConfiguration(string rulesConfigPath, EmailConfiguration email, LoggingConfiguration logging)
         {
@@ -45,8 +45,6 @@ namespace AutomationApp.Models
             Logging = logging ?? throw new ArgumentNullException(nameof(logging));
             File = File ?? throw new ArgumentNullException(nameof(File));
             Rules = Rules ?? throw new ArgumentNullException(nameof(Rules));
-            if (Rules.Count == 0)
-                throw new InvalidOperationException("No automation rules defined in the configuration.");
         }
     }
 

@@ -18,3 +18,5 @@
 [2025-05-18 21:44:29] [Error] [Program] ERROR: Fatal error in application startup
 [2025-05-18 21:59:15] [Success] [RuleConfigLoader] SUCCESS: Copied: C:\Users\USER\Desktop\Laurels Echichinwo_Resume-Bloom (1).pdf -> C:\Backup\20250518_215915\Laurels Echichinwo_Resume-Bloom (1).pdf
 [2025-05-18 21:59:15] [Success] [RuleConfigLoader] SUCCESS: Moved: C:\Users\USER\Desktop\Laurels Echichinwo_Resume-Bloom (1).pdf -> C:\Users\USER\Downloads\Laurels Echichinwo_Resume-Bloom (1).pdf
+[2025-05-19 13:27:37] [Error] [RuleConfigLoader] ERROR: Failed to deserialize rules from config.rule.json: Invalid JSON format
+[2025-05-19 13:27:37] [Error] [Program] ERROR: Fatal error in application startup

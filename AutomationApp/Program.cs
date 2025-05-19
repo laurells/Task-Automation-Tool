@@ -42,35 +42,32 @@ namespace AutomationApp
             // Initialize bootstrap logger for configuration loading
             var bootstrapLogger = new Logger("Bootstrap", new LoggingConfiguration
             {
-                LogDirectory = "C:\\Logs",
+                LogDirectory = "Logs",
                 LogLevel = LogLevel.Info,
                 EnableConsoleOutput = true,
-                EnableFileLogging = true,
+                EnableFileLogging = false,
                 EnableErrorLogging = true
             });
-
+        try
+            {
             // Load configuration
-            var config = await LoadConfigurationAsync(bootstrapLogger, "appsettings.json");
+            var configFile = Environment.GetEnvironmentVariable("CONFIG_FILE") ?? "appsettings.json";
+            var configService = new ConfigurationService(bootstrapLogger);
+            var config = await configService.LoadConfigurationAsync(configFile);
             if (config == null)
             {
-                Console.WriteLine("Failed to load configuration. Exiting.");
-                Console.ReadKey();
+                bootstrapLogger.LogError(null!, "Failed to load configuration. Exiting.");
+                Console.WriteLine($"Failed to load configuration from {configFile}. Check console output.");
                 return 1;
             }
 
-            // write the logger for the DI container
-
-            
-
             // Set up dependency injection
             var services = new ServiceCollection();
-            
-            
             // Register logger services
             var programLogger = new Logger("Program", config.Logging);
             services.AddSingleton<ILoggerService>(programLogger);
             services.AddSingleton(provider => programLogger);
-            
+
             // Register other services with the logger
             services.AddSingleton<IFileService>(provider => new FileService(programLogger));
             services.AddSingleton<IDataService>(provider => new DataService(programLogger));
@@ -79,18 +76,18 @@ namespace AutomationApp
 
             // Resolve logger for main program
             var logger = provider.GetRequiredService<ILoggerService>();
-            // the logger should not be null, but we can check it
-            if (logger == null)
-            {
-                Console.WriteLine("Logger service is not available. Exiting.");
-                return 1;
-            }
-            try
-            {
-                logger.LogInfo("Starting Task Automation Tool");
+            logger.LogInfo("Starting Task Automation Tool");
 
-                // Load rules using RuleConfigLoader with DI services
-                var engine = await RuleConfigLoader.LoadRulesAsync(
+            // Verify rules config file
+            var rulesConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.RulesConfigPath);
+            if (!File.Exists(rulesConfigPath))
+            {
+                logger.LogWarning($"Rules configuration file not found: {rulesConfigPath}. Creating empty rules file.");
+                await File.WriteAllTextAsync(rulesConfigPath, "[]");
+            }
+
+            // Load rules using RuleConfigLoader with DI services
+            var engine = await RuleConfigLoader.LoadRulesAsync(
                     config.Logging,
                     config.RulesConfigPath,
                     provider.GetRequiredService<IFileService>(),
@@ -99,9 +96,11 @@ namespace AutomationApp
                 logger.LogInfo("Rules loaded successfully");
 
                 // Handle CLI or GUI mode based on arguments
+                // Handle CLI or GUI
                 if (args.Length == 0)
                 {
-                    Console.WriteLine("No command provided. Usage: dotnet run -- [gui|run]");
+                    logger.LogError(null!, "No command provided. Usage: dotnet run -- [gui|run|schedule|test|status|configure|list-rules|validate-rules]");
+                    Console.WriteLine("No command provided. Usage: dotnet run -- [gui|run|schedule|test|status|configure|list-rules|validate-rules]");
                     return 1;
                 }
 
@@ -110,25 +109,15 @@ namespace AutomationApp
                     return RunGuiMode(args, engine, logger);
                 }
 
-                if (args[0].Equals("run", StringComparison.OrdinalIgnoreCase))
-                {
-                    logger.LogInfo("Running CLI command");
-                    var cliLogger = new Logger("CLI", config.Logging);
-                    var commandHandler = new CommandHandler(engine, cliLogger);
-                    await commandHandler.HandleAsync(args);
-                    logger.LogInfo("CLI execution completed");
-                    return 0;
-                }
-
-                Console.WriteLine($"Unknown command: {args[0]}. Usage: dotnet run -- [gui|run]");
-                return 1;
+                // CLI commands
+                var commandHandler = new CommandHandler(engine, (Logger)logger);
+                await commandHandler.HandleAsync(args);
+                return 0;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Fatal error in application startup");
-                Console.WriteLine("An error occurred during application startup. Please check the logs for more details.");
-                Console.WriteLine("Press any key to exit.");
-                Console.ReadKey();
+                bootstrapLogger.LogError(ex, "Fatal error in application startup");
+                Console.WriteLine("An error occurred during application startup. Check console output.");
                 return 1;
             }
         }
@@ -148,9 +137,8 @@ namespace AutomationApp
         {
             try
             {
-                // Configure and start Avalonia application
                 var appBuilder = AppBuilder.Configure<App>()
-                    //.UsePlatformDetect() // Enable platform-specific rendering
+                    // .UsePlatformDetect()
                     .LogToTrace();
 
                 var app = appBuilder.StartWithClassicDesktopLifetime(args);
@@ -160,11 +148,9 @@ namespace AutomationApp
                     return 1;
                 }
 
-                // Create and show main window
                 var mainWindow = new MainWindow(engine, logger);
                 mainWindow.Show();
 
-                // Set main window and shutdown mode
                 if (Avalonia.Application.Current is IClassicDesktopStyleApplicationLifetime appInstance)
                 {
                     appInstance.MainWindow = mainWindow;
@@ -186,114 +172,19 @@ namespace AutomationApp
             }
         }
 
+
         /// <summary>
-        /// Asynchronously loads the application configuration from a JSON file.
+        /// The Avalonia application class.
         /// </summary>
-        /// <param name="logger">The logger for configuration loading errors.</param>
-        /// <param name="configPath">The path to the configuration file (default: "appsettings.json").</param>
-        /// <returns>A task that resolves to the <see cref="AppConfiguration"/> or null if loading fails.</returns>
-        /// <exception cref="JsonException">Thrown when JSON deserialization fails.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when required configuration properties are invalid.</exception>
         /// <remarks>
-        /// Creates a default configuration if the file does not exist. Validates SMTP settings and rules config path.
-        /// Uses case-insensitive JSON deserialization and supports enum string conversion.
+        /// Initializes the Avalonia application and loads XAML resources for the GUI.
         /// </remarks>
-        private static async Task<AppConfiguration?> LoadConfigurationAsync(ILoggerService logger, string configPath = "appsettings.json")
+        public class App : Application
         {
-            try
+            public override void Initialize()
             {
-                // Resolve full path to configuration file
-                var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath);
-                if (!File.Exists(fullPath))
-                {
-                    logger.LogWarning($"Configuration file not found: {fullPath}. Creating default configuration.");
-                    var defaultConfig = new AppConfiguration(
-                        rulesConfigPath: "config.rules.json",
-                        email: new EmailConfiguration
-                        {
-                            SmtpHost = "smtp.example.com",
-                            SmtpPort = 587,
-                            Email = "user@example.com",
-                            Password = "password",
-                            UseSmtpSsl = true,
-                            ImapHost = "imap.example.com",
-                            ImapPort = 993,
-                            UseImapSsl = true
-                        },
-                        logging: new LoggingConfiguration
-                        {
-                            LogDirectory = "C:\\Logs",
-                            LogLevel = LogLevel.Info,
-                            EnableConsoleOutput = true,
-                            EnableFileLogging = true,
-                            EnableErrorLogging = true
-                        });
-
-                    // Serialize and write default configuration
-                    var jsonString = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
-                    await File.WriteAllTextAsync(fullPath, jsonString);
-                    logger.LogInfo($"Default configuration created at: {fullPath}");
-                    return defaultConfig;
-                }
-
-                // Read and deserialize configuration
-                var json = await File.ReadAllTextAsync(fullPath);
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    Converters = { new JsonStringEnumConverter() }
-                };
-                var config = JsonSerializer.Deserialize<AppConfiguration>(json, options);
-
-                if (config == null)
-                {
-                    logger.LogError(null!, "Failed to deserialize configuration: Result is null");
-                    throw new JsonException("Failed to deserialize configuration");
-                }
-
-                // Validate configuration properties
-                if (string.IsNullOrEmpty(config.Email.SmtpHost))
-                    throw new InvalidOperationException("SMTP host is required");
-                if (config.Email.SmtpPort <= 0)
-                    throw new InvalidOperationException("SMTP port must be greater than 0");
-                if (string.IsNullOrEmpty(config.RulesConfigPath))
-                    throw new InvalidOperationException("Rules configuration path is required");
-
-                logger.LogInfo($"Configuration loaded from: {fullPath}");
-                return config;
+                AvaloniaXamlLoader.Load(this);
             }
-            catch (JsonException ex)
-            {
-                logger.LogError(ex, $"Failed to deserialize configuration from {configPath}");
-                return null;
-            }
-            catch (IOException ex)
-            {
-                logger.LogError(ex, $"Failed to read configuration file: {configPath}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"Unexpected error loading configuration: {configPath}");
-                return null;
-            }
-        }
-    }
-
-    /// <summary>
-    /// The Avalonia application class.
-    /// </summary>
-    /// <remarks>
-    /// Initializes the Avalonia application and loads XAML resources for the GUI.
-    /// </remarks>
-    public class App : Application
-    {
-        /// <summary>
-        /// Initializes the application by loading XAML resources.
-        /// </summary>
-        public override void Initialize()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
     }
 }

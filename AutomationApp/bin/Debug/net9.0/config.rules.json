@@ -14,5 +14,16 @@
     "type": "DataProcessingRule",
     "name": "ProcessingDataFromCSV_automation",
     "csvPath": "C:\\\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data.csv"
+  },
+  {
+    "type": "FileMoveRule",
+    "name": "Movefiletotarget",
+    "source": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp",
+    "target": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\Target",
+    "supportedExtensions": [
+      ".txt"
+    ],
+    "addTimestamp": false,
+    "backupFiles": false
   }
 ]

@@ -21,6 +21,7 @@ C:\Users\USER\.nuget\packages\epplus.interfaces\8.0.0\lib\net9.0\EPPlus.Interfac
 C:\Users\USER\.nuget\packages\excelnumberformat\1.1.0\lib\netstandard2.0\ExcelNumberFormat.dll
 C:\Users\USER\.nuget\packages\mailkit\4.12.0\lib\net8.0\MailKit.dll
 C:\Users\USER\.nuget\packages\microcom.runtime\0.11.0\lib\net5.0\MicroCom.Runtime.dll
+C:\Users\USER\.nuget\packages\microsoft.bcl.asyncinterfaces\6.0.0\lib\netstandard2.1\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\Microsoft.CSharp.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.configuration.abstractions\9.0.3\lib\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
 C:\Users\USER\.nuget\packages\microsoft.extensions.configuration.binder\9.0.0\lib\net9.0\Microsoft.Extensions.Configuration.Binder.dll
@@ -105,6 +106,7 @@ C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.IO.Pipes.AccessControl.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.IO.Pipes.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.IO.UnmanagedMemoryStream.dll
+C:\Users\USER\.nuget\packages\system.linq.async\6.0.1\ref\net6.0\System.Linq.Async.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Linq.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Linq.Expressions.dll
 C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\9.0.4\ref\net9.0\System.Linq.Parallel.dll

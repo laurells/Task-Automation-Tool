@@ -40,8 +40,8 @@ namespace AutomationApp.Services
                 throw new ArgumentException("Category name cannot be null or empty.", nameof(categoryName));
             if (loggingConfig == null)
                 throw new ArgumentNullException(nameof(loggingConfig));
-            if (string.IsNullOrEmpty(loggingConfig.LogDirectory))
-                throw new ArgumentException("Log directory cannot be null or empty.", nameof(loggingConfig));
+            // if (string.IsNullOrEmpty(loggingConfig.LogDirectory))
+            //     throw new ArgumentException("Log directory cannot be null or empty.", nameof(loggingConfig));
 
             _categoryName = categoryName;
             _loggingConfig = loggingConfig;
