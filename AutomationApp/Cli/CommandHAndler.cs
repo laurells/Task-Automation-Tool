@@ -4,27 +4,45 @@ using System.Text.Json;
 
 namespace AutomationApp.Cli
 {
+    /// <summary>
+    /// Handles command-line interface (CLI) commands for the Task Automation Tool.
+    /// Processes user inputs to execute, schedule, test, or configure automation rules.
+    /// </summary>
     public class CommandHandler
     {
         private readonly AutomationEngine _engine;
         private readonly Logger _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommandHandler"/> class.
+        /// </summary>
+        /// <param name="engine">The automation engine to execute rules. Cannot be null.</param>
+        /// <param name="logger">The logger for recording operations and errors. Cannot be null.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="engine"/> or <paramref name="logger"/> is null.</exception>
         public CommandHandler(AutomationEngine engine, Logger logger)
         {
             _engine = engine ?? throw new ArgumentNullException(nameof(engine));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// Processes CLI arguments asynchronously and routes to appropriate command handlers.
+        /// </summary>
+        /// <param name="args">The command-line arguments provided by the user.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        /// <exception cref="Exception">Logs and handles any uncaught exceptions, showing help.</exception>
         public async Task HandleAsync(string[] args)
         {
             try
             {
+                // Check if no arguments are provided
                 if (args.Length == 0)
                 {
                     ShowHelp();
                     return;
                 }
 
+                // Route to command based on first argument
                 switch (args[0].ToLower())
                 {
                     case "run":
@@ -55,6 +73,9 @@ namespace AutomationApp.Cli
             }
         }
 
+        /// <summary>
+        /// Displays the CLI help message with available commands and usage examples.
+        /// </summary>
         private void ShowHelp()
         {
             _logger.LogInfo("Task Automation Tool - Command Line Interface");
@@ -72,6 +93,10 @@ namespace AutomationApp.Cli
             _logger.LogInfo("  automation.exe configure");
         }
 
+        /// <summary>
+        /// Executes all configured automation rules once.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task RunCommand()
         {
             _logger.LogInfo("Starting rule execution...");
@@ -79,10 +104,17 @@ namespace AutomationApp.Cli
             _logger.LogInfo($"Rule execution completed. Success: {result}");
         }
 
+        /// <summary>
+        /// Schedules rule execution at a specified interval.
+        /// </summary>
+        /// <param name="args">Command-line arguments, including optional --interval parameter.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ScheduleCommand(string[] args)
         {
-            int interval = 30; // default 30 seconds
+            // Default interval is 30 seconds
+            int interval = 30;
 
+            // Parse --interval argument if provided
             for (int i = 1; i < args.Length; i++)
             {
                 if (string.IsNullOrEmpty(args[i]) || !args[i].StartsWith("--interval"))
@@ -100,12 +132,13 @@ namespace AutomationApp.Cli
                 }
             }
 
+            // Initialize and start the scheduler
             var scheduler = new AutomationScheduler(_engine, interval, _logger);
             _logger.LogInfo($"Scheduler will run every {interval} seconds");
             _logger.LogInfo($"Starting scheduler with interval: {interval} seconds");
             scheduler.Start();
 
-            // Wait for Ctrl+C or other termination signal
+            // Wait for termination signal (e.g., Ctrl+C)
             var cts = new CancellationTokenSource();
             Console.CancelKeyPress += (s, e) =>
             {
@@ -124,20 +157,27 @@ namespace AutomationApp.Cli
             }
         }
 
+        /// <summary>
+        /// Tests specific rules interactively by allowing the user to select and execute them.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task TestCommand()
         {
+            // Check if any rules are configured
             if (_engine.Rules.Count == 0)
             {
                 _logger.LogWarning("No rules configured. Check appsettings.json and CSV files.");
                 return;
             }
 
+            // List available rules
             _logger.LogInfo("Available rules:");
             foreach (var rule in _engine.Rules)
             {
                 _logger.LogInfo($"- {rule.RuleName} ({rule.GetType().Name})");
             }
 
+            // Interactive rule testing loop
             while (true)
             {
                 _logger.LogInfo("\nEnter rule name to test (or 'exit' to quit): ");
@@ -152,6 +192,7 @@ namespace AutomationApp.Cli
                     continue;
                 }
 
+                // Find the rule by name (case-insensitive)
                 var rule = _engine.Rules.FirstOrDefault(r => string.Equals(r.RuleName, input, StringComparison.OrdinalIgnoreCase));
                 if (rule == null)
                 {
@@ -159,10 +200,11 @@ namespace AutomationApp.Cli
                     continue;
                 }
 
+                // Execute the selected rule
                 _logger.LogInfo($"Testing rule: {rule.RuleName}");
                 try
                 {
-                    await rule.ExecuteAsync();
+                    await rule.ExecuteAsync(logger: _logger);
                     _logger.LogInfo($"Rule test completed successfully: {rule.RuleName}");
                 }
                 catch (Exception ex)
@@ -172,28 +214,39 @@ namespace AutomationApp.Cli
             }
         }
 
+        /// <summary>
+        /// Displays the status of configured rules, including their type and enabled state.
+        /// </summary>
+        /// <returns>A completed task.</returns>
         private Task StatusCommand()
         {
             _logger.LogInfo("Task Automation Tool Status");
             _logger.LogInfo($"Rules configured: {_engine.Rules.Count}");
 
+            // Log details for each rule
             foreach (var rule in _engine.Rules)
             {
                 _logger.LogInfo($"- {rule.RuleName}");
                 _logger.LogInfo($"  Type: {rule.GetType().Name}");
                 _logger.LogInfo($"  Status: {(rule.Enabled ? "Enabled" : "Disabled")}");
+                // Note: Uncomment below for additional statistics when implemented
                 // _logger.LogInfo($"  Last Execution: {rule.LastExecutionTime ?? DateTime.MinValue}");
-                // logger.LogInformation($"  Success: {rule.SuccessCount}");
-                // logger.LogInformation($"  Failures: {rule.FailureCount}");
+                // _logger.LogInfo($"  Success: {rule.SuccessCount}");
+                // _logger.LogInfo($"  Failures: {rule.FailureCount}");
             }
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Interactively configures new automation rules and saves them to the configuration file.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ConfigureCommand()
         {
             _logger.LogInfo("Starting rule configuration...");
             while (true)
             {
+                // Display rule type options
                 _logger.LogInfo("\nSelect rule type to configure (or 'exit' to quit):");
                 _logger.LogInfo("1. FileMoveRule");
                 _logger.LogInfo("2. BulkEmailRule");
@@ -206,10 +259,11 @@ namespace AutomationApp.Cli
 
                 if (input != "1" && input != "2" && input != "3")
                 {
-                    _logger.LogWarning("Invalid selection. Enter '1', '2', or 'exit'.");
+                    _logger.LogWarning("Invalid selection. Enter '1', '2', '3', or 'exit'.");
                     continue;
                 }
 
+                // Route to specific rule configuration
                 if (input == "1")
                 {
                     await ConfigureFileMoveRule();
@@ -222,13 +276,13 @@ namespace AutomationApp.Cli
                 {
                     await ConfigureDataProcessingRule();
                 }
-                // else
-                // {
-                //     await ConfigureBulkEmailRule();
-                // }
             }
         }
 
+        /// <summary>
+        /// Configures a FileMoveRule by prompting for settings and saves it to the configuration.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ConfigureFileMoveRule()
         {
             _logger.LogInfo("Configuring FileMoveRule...");
@@ -266,6 +320,7 @@ namespace AutomationApp.Cli
             _logger.LogInfo("Create backups? (y/n):");
             var backupFiles = Console.ReadLine()?.Trim().ToLower() == "y";
 
+            // Create rule configuration object
             var rule = new
             {
                 type = "FileMoveRule",
@@ -281,6 +336,10 @@ namespace AutomationApp.Cli
             _logger.LogInfo($"FileMoveRule '{name}' configured successfully.");
         }
 
+        /// <summary>
+        /// Configures a BulkEmailRule by prompting for settings and saves it to the configuration.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ConfigureBulkEmailRule()
         {
             _logger.LogInfo("Configuring BulkEmailRule...");
@@ -300,6 +359,7 @@ namespace AutomationApp.Cli
                 return;
             }
 
+            // Create rule configuration object
             var rule = new
             {
                 type = "BulkEmailRule",
@@ -309,10 +369,12 @@ namespace AutomationApp.Cli
 
             await SaveRuleToConfig(rule);
             _logger.LogInfo($"BulkEmailRule '{name}' configured successfully.");
-
-        
         }
 
+        /// <summary>
+        /// Configures a DataProcessingRule by prompting for settings and saves it to the configuration.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ConfigureDataProcessingRule()
         {
             _logger.LogInfo("Configuring DataProcessingRule...");
@@ -324,25 +386,44 @@ namespace AutomationApp.Cli
                 return;
             }
 
-            _logger.LogInfo("Enter CSV file path (e.g., data.csv):");
-            var csvPath = Console.ReadLine()?.Trim();
-            if (string.IsNullOrEmpty(csvPath) || !File.Exists(csvPath))
+            _logger.LogInfo("Enter file path (e.g., data.csv or data.xlsx):");
+            var filePath = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
-                _logger.LogWarning("CSV file path is invalid or file does not exist.");
+                _logger.LogWarning("File path is invalid or file does not exist.");
                 return;
             }
 
+            _logger.LogInfo("Enter required columns (comma-separated, e.g., id,name):");
+            var columnsInput = Console.ReadLine()?.Trim();
+            var requiredColumns = string.IsNullOrEmpty(columnsInput)
+                ? Array.Empty<string>()
+                : columnsInput.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToArray();
+
+            if (!requiredColumns.Any())
+            {
+                _logger.LogWarning("At least one required column must be specified.");
+                return;
+            }
+
+            // Create rule configuration object
             var rule = new
             {
                 type = "DataProcessingRule",
                 name,
-                csvPath
+                filePath,
+                requiredColumns
             };
 
             await SaveRuleToConfig(rule);
             _logger.LogInfo($"DataProcessingRule '{name}' configured successfully.");
         }
 
+        /// <summary>
+        /// Saves a rule configuration to the config.rules.json file.
+        /// </summary>
+        /// <param name="rule">The rule configuration object to save.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task SaveRuleToConfig(object rule)
         {
             try
@@ -350,12 +431,14 @@ namespace AutomationApp.Cli
                 var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.rules.json");
                 List<object> rules = [];
 
+                // Load existing rules if config file exists
                 if (File.Exists(configPath))
                 {
                     var json = await File.ReadAllTextAsync(configPath);
                     rules = JsonSerializer.Deserialize<List<object>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? [];
                 }
 
+                // Add new rule and save to file
                 rules.Add(rule);
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 var updatedJson = JsonSerializer.Serialize(rules, options);
@@ -369,4 +452,3 @@ namespace AutomationApp.Cli
         }
     }
 }
-

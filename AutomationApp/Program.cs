@@ -1,252 +1,296 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutomationApp.Services;
-using AutomationApp.Models;
-using AutomationApp.Rules;
-using AutomationApp.Cli;
-using AutomationApp.Utils;
+using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using AutomationApp;
-using ClosedXML;
-
-
-
-
-var tempConfig = LoadConfiguration(new Logger("Bootstrap", new LoggingConfiguration()));
-if (tempConfig == null)
-{
-    Console.WriteLine("Failed to load configuration. Exiting.");
-    Console.ReadKey();
-    return 1;
-}
-
-var logger = new Logger("Program", tempConfig.Logging);
-try
-{
-    logger.LogInfo("Starting Task Automation Tool");
-
-    var config = LoadConfiguration(logger);
-    if (config == null)
-    {
-        logger.LogInfo("Failed to load configuration");
-        return 1;
-    }
-
-    var engine = RuleConfigLoader.LoadRules(config.Logging);
-    var fileService = new FileService(logger);
-    var dataService = new DataService(logger);
-    var emailService = new EmailService(config.Email, logger);
-
-    foreach (var rule in config.Rules)
-    {
-        try
-        {
-            if (!rule.Enabled)
-            {
-                logger.LogInfo($"Skipping disabled rule: {rule.Name}");
-                continue;
-            }
-
-            Dictionary<string, object> settings = rule.Settings;
-            switch (rule.Type.ToLower())
-            {
-                case "filemoverule":
-                    if (!settings.TryGetValue("source", out object? sourceObj) || sourceObj is not string source || string.IsNullOrEmpty(source))
-                    {
-                        logger.LogInfo($"Missing or invalid 'source' for rule: {rule.Name}");
-                        continue;
-                    }
-                    if (!settings.TryGetValue("target", out object? targetObj) || targetObj is not string target || string.IsNullOrEmpty(target))
-                    {
-                        logger.LogInfo($"Missing or invalid 'target' for rule: {rule.Name}");
-                        continue;
-                    }
-
-                    var extensions = settings.TryGetValue("supportedExtensions", out object? extObj) && extObj is JsonElement extArray && extArray.ValueKind == JsonValueKind.Array
-                        ? extArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray()!
-                        : Array.Empty<string>();
-                    var addTimestamp = settings.TryGetValue("addTimestamp", out object? tsObj) && tsObj is bool tsValue ? tsValue : false;
-                    var backupFiles = settings.TryGetValue("backupFiles", out object? bfObj) && bfObj is bool bfValue ? bfValue : false;
-
-                    engine.RegisterRule(new FileMoveRule(
-                        source,
-                        target,
-                        fileService,
-                        logger,
-                        extensions as string[],
-                        addTimestamp,
-                        backupFiles));
-                    logger.LogInfo($"Registered rule: {rule.Name}");
-                    break;
-
-                case "bulkemailrule":
-                    var csvPath = settings.TryGetValue("csvPath", out object? csvObj) && csvObj is string csvValue ? csvValue : "recipients.csv";
-                    if (!File.Exists(csvPath))
-                    {
-                        logger.LogWarning($"CSV file not found for rule {rule.Name}: {csvPath}");
-                        continue;
-                    }
-                    engine.RegisterRule(new BulkEmailRule(
-                        emailService,
-                        dataService,
-                        config.Email,
-                        csvPath));
-                    logger.LogInfo($"Registered rule: {rule.Name}");
-                    break;
-
-                case "dataprocessingrule":
-                                var filePath = settings.TryGetValue("filePath", out object? fileObj) && fileObj is string fileValue ? fileValue : null;
-                                if (string.IsNullOrEmpty(filePath))
-                                {
-                                    logger.LogWarning($"Missing or invalid 'filePath' for rule: {rule.Name}");
-                                    continue;
-                                }
-                                if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-                    {
-                        logger.LogWarning($"File not found for rule {rule.Name}: {filePath}");
-                        continue;
-                    }
-                                var requiredColumns = settings.TryGetValue("requiredColumns", out object? colsObj) && colsObj is JsonElement colsArray && colsArray.ValueKind == JsonValueKind.Array
-                                    ? colsArray.EnumerateArray().Select(e => e.GetString()).Where(s => s != null).ToArray()!
-                                    : Array.Empty<string>();
-
-                                engine.RegisterRule(new DataProcessingRule(
-                                    dataService,
-                                    filePath,
-                                    requiredColumns as string[],
-                                    logger));
-                                logger.LogInfo($"Registered rule: {rule.Name}");
-                                break;
-
-                            default:
-                                logger.LogWarning($"Unknown rule type: {rule.Type}");
-                                break;
-
-        
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, $"Failed to register rule: {rule.Name}");
-        }
-    }
-
-    if (args.Length > 0 && args[0].ToLower() == "gui")
-    {
-        // Launch Avalonia GUI
-        var appBuilder = AppBuilder.Configure<App>()
-            // .UsePlatformDetect()
-            .LogToTrace();
-
-        var app = appBuilder.StartWithClassicDesktopLifetime(args);
-        if (app != 0)
-        {
-            logger.LogInfo($"Failed to start Avalonia application (error code: {app})");
-            return 1;
-        }
-
-        // Create and show the main window
-        var mainWindow = new MainWindow(engine, logger);
-        mainWindow.Show();
-        
-        // Get the application instance and set the main window
-        var appInstance = Avalonia.Application.Current as IClassicDesktopStyleApplicationLifetime;
-        if (appInstance != null)
-        {
-            appInstance.MainWindow = mainWindow;
-            appInstance.ShutdownMode = ShutdownMode.OnMainWindowClose;
-        }
-        else
-        {
-            logger.LogInfo("Unsupported application lifetime");
-        }
-    }
-
-    var commandHandler = new CommandHandler(engine, logger);
-    await commandHandler.HandleAsync(args);
-    return 0;
-}
-catch (Exception ex)
-{
-    logger.LogError(ex, "Fatal error in application startup");
-    Console.WriteLine("An error occurred during application startup. Please check the logs for more details.");
-    Console.WriteLine("Press any key to exit.");
-    Console.ReadKey();
-    return 1;
-}
-
-AppConfiguration? LoadConfiguration(Logger logger)
-{
-    try
-    {
-        var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
-
-        if (!File.Exists(configPath))
-        {
-            logger.LogWarning($"Configuration file not found: {configPath}. Creating default configuration.");
-            var appConfig = new AppConfiguration
-            {
-                Email = new EmailConfiguration
-                {
-                    SmtpHost = "smtp.example.com",
-                    SmtpPort = 587,
-                    Email = "user@example.com",
-                    Password = "password",
-                    UseSmtpSsl = true,
-                    ImapHost = "imap.example.com",
-                    ImapPort = 993,
-                    UseImapSsl = true
-                },
-                Rules = new List<AutomationRule>()
-            };
-
-            var jsonString = JsonSerializer.Serialize(appConfig, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(configPath, jsonString);
-            return appConfig;
-        }
-
-        var json = File.ReadAllText(configPath);
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new JsonStringEnumConverter() }
-        };
-        var config = JsonSerializer.Deserialize<AppConfiguration>(json, options);
-
-        if (config == null)
-        {
-            throw new JsonException("Failed to deserialize configuration");
-        }
-
-        if (string.IsNullOrEmpty(config.Email.SmtpHost))
-            throw new InvalidOperationException("SMTP host is required");
-        if (config.Email.SmtpPort <= 0)
-            throw new InvalidOperationException("SMTP port must be greater than 0");
-        config.Rules ??= new List<AutomationRule>();
-
-        return config;
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, $"Error loading configuration: {ex.Message}");
-        return null;
-    }
-}
-
+using AutomationApp.Cli;
+using AutomationApp.Core;
+using AutomationApp.Models;
+using AutomationApp.Services;
+using AutomationApp.Interfaces;
+using AutomationApp.Utils;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AutomationApp
 {
+    /// <summary>
+    /// The main entry point for the Task Automation Tool.
+    /// </summary>
+    /// <remarks>
+    /// Initializes the application, loads configuration, and starts either CLI or GUI mode based on command-line arguments.
+    /// Uses <see cref="Microsoft.Extensions.DependencyInjection"/> to manage services like <see cref="ILoggerService"/>,
+    /// <see cref="IFileService"/>, <see cref="IDataService"/>, and <see cref="IEmailService"/>.
+    /// </remarks>
+    public static class Program
+    {
+        /// <summary>
+        /// The main application entry point.
+        /// </summary>
+        /// <param name="args">Command-line arguments (e.g., "gui" for GUI mode, "run" for CLI mode).</param>
+        /// <returns>A task that resolves to the exit code (0 for success, 1 for failure).</returns>
+        /// <remarks>
+        /// Loads configuration from <c>appsettings.json</c>, sets up dependency injection, and delegates to
+        /// <see cref="CommandHandler"/> for CLI mode or launches the Avalonia GUI with <see cref="MainWindow"/> for GUI mode.
+        /// </remarks>
+        [STAThread]
+        public static async Task<int> Main(string[] args)
+        {
+            // Initialize bootstrap logger for configuration loading
+            var bootstrapLogger = new Logger("Bootstrap", new LoggingConfiguration
+            {
+                LogDirectory = "C:\\Logs",
+                LogLevel = LogLevel.Info,
+                EnableConsoleOutput = true,
+                EnableFileLogging = true,
+                EnableErrorLogging = true
+            });
 
-    // Required for Avalonia
+            // Load configuration
+            var config = await LoadConfigurationAsync(bootstrapLogger, "appsettings.json");
+            if (config == null)
+            {
+                Console.WriteLine("Failed to load configuration. Exiting.");
+                Console.ReadKey();
+                return 1;
+            }
 
+            // write the logger for the DI container
+
+            
+
+            // Set up dependency injection
+            var services = new ServiceCollection();
+            
+            
+            // Register logger services
+            var programLogger = new Logger("Program", config.Logging);
+            services.AddSingleton<ILoggerService>(programLogger);
+            services.AddSingleton(provider => programLogger);
+            
+            // Register other services with the logger
+            services.AddSingleton<IFileService>(provider => new FileService(programLogger));
+            services.AddSingleton<IDataService>(provider => new DataService(programLogger));
+            services.AddSingleton<IEmailService>(provider => new EmailService(config.Email, programLogger));
+            var provider = services.BuildServiceProvider();
+
+            // Resolve logger for main program
+            var logger = provider.GetRequiredService<ILoggerService>();
+            // the logger should not be null, but we can check it
+            if (logger == null)
+            {
+                Console.WriteLine("Logger service is not available. Exiting.");
+                return 1;
+            }
+            try
+            {
+                logger.LogInfo("Starting Task Automation Tool");
+
+                // Load rules using RuleConfigLoader with DI services
+                var engine = await RuleConfigLoader.LoadRulesAsync(
+                    config.Logging,
+                    config.RulesConfigPath,
+                    provider.GetRequiredService<IFileService>(),
+                    provider.GetRequiredService<IDataService>(),
+                    provider.GetRequiredService<IEmailService>());
+                logger.LogInfo("Rules loaded successfully");
+
+                // Handle CLI or GUI mode based on arguments
+                if (args.Length == 0)
+                {
+                    Console.WriteLine("No command provided. Usage: dotnet run -- [gui|run]");
+                    return 1;
+                }
+
+                if (args[0].Equals("gui", StringComparison.OrdinalIgnoreCase))
+                {
+                    return RunGuiMode(args, engine, logger);
+                }
+
+                if (args[0].Equals("run", StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogInfo("Running CLI command");
+                    var cliLogger = new Logger("CLI", config.Logging);
+                    var commandHandler = new CommandHandler(engine, cliLogger);
+                    await commandHandler.HandleAsync(args);
+                    logger.LogInfo("CLI execution completed");
+                    return 0;
+                }
+
+                Console.WriteLine($"Unknown command: {args[0]}. Usage: dotnet run -- [gui|run]");
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Fatal error in application startup");
+                Console.WriteLine("An error occurred during application startup. Please check the logs for more details.");
+                Console.WriteLine("Press any key to exit.");
+                Console.ReadKey();
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Runs the application in GUI mode using Avalonia.
+        /// </summary>
+        /// <param name="args">Command-line arguments for Avalonia.</param>
+        /// <param name="engine">The automation engine for managing rules.</param>
+        /// <param name="logger">The logger for GUI operations.</param>
+        /// <returns>The exit code (0 for success, 1 for failure).</returns>
+        /// <remarks>
+        /// Configures Avalonia with platform-specific rendering, creates and displays <see cref="MainWindow"/>,
+        /// and sets the application lifetime to close when the main window is closed.
+        /// </remarks>
+        private static int RunGuiMode(string[] args, AutomationEngine engine, ILoggerService logger)
+        {
+            try
+            {
+                // Configure and start Avalonia application
+                var appBuilder = AppBuilder.Configure<App>()
+                    //.UsePlatformDetect() // Enable platform-specific rendering
+                    .LogToTrace();
+
+                var app = appBuilder.StartWithClassicDesktopLifetime(args);
+                if (app != 0)
+                {
+                    logger.LogError(null!, $"Failed to start Avalonia application (error code: {app})");
+                    return 1;
+                }
+
+                // Create and show main window
+                var mainWindow = new MainWindow(engine, logger);
+                mainWindow.Show();
+
+                // Set main window and shutdown mode
+                if (Avalonia.Application.Current is IClassicDesktopStyleApplicationLifetime appInstance)
+                {
+                    appInstance.MainWindow = mainWindow;
+                    appInstance.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                    logger.LogInfo("Avalonia GUI started successfully");
+                }
+                else
+                {
+                    logger.LogError(null!, "Unsupported application lifetime");
+                    return 1;
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to start GUI mode");
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously loads the application configuration from a JSON file.
+        /// </summary>
+        /// <param name="logger">The logger for configuration loading errors.</param>
+        /// <param name="configPath">The path to the configuration file (default: "appsettings.json").</param>
+        /// <returns>A task that resolves to the <see cref="AppConfiguration"/> or null if loading fails.</returns>
+        /// <exception cref="JsonException">Thrown when JSON deserialization fails.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when required configuration properties are invalid.</exception>
+        /// <remarks>
+        /// Creates a default configuration if the file does not exist. Validates SMTP settings and rules config path.
+        /// Uses case-insensitive JSON deserialization and supports enum string conversion.
+        /// </remarks>
+        private static async Task<AppConfiguration?> LoadConfigurationAsync(ILoggerService logger, string configPath = "appsettings.json")
+        {
+            try
+            {
+                // Resolve full path to configuration file
+                var fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath);
+                if (!File.Exists(fullPath))
+                {
+                    logger.LogWarning($"Configuration file not found: {fullPath}. Creating default configuration.");
+                    var defaultConfig = new AppConfiguration(
+                        rulesConfigPath: "config.rules.json",
+                        email: new EmailConfiguration
+                        {
+                            SmtpHost = "smtp.example.com",
+                            SmtpPort = 587,
+                            Email = "user@example.com",
+                            Password = "password",
+                            UseSmtpSsl = true,
+                            ImapHost = "imap.example.com",
+                            ImapPort = 993,
+                            UseImapSsl = true
+                        },
+                        logging: new LoggingConfiguration
+                        {
+                            LogDirectory = "C:\\Logs",
+                            LogLevel = LogLevel.Info,
+                            EnableConsoleOutput = true,
+                            EnableFileLogging = true,
+                            EnableErrorLogging = true
+                        });
+
+                    // Serialize and write default configuration
+                    var jsonString = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(fullPath, jsonString);
+                    logger.LogInfo($"Default configuration created at: {fullPath}");
+                    return defaultConfig;
+                }
+
+                // Read and deserialize configuration
+                var json = await File.ReadAllTextAsync(fullPath);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new JsonStringEnumConverter() }
+                };
+                var config = JsonSerializer.Deserialize<AppConfiguration>(json, options);
+
+                if (config == null)
+                {
+                    logger.LogError(null!, "Failed to deserialize configuration: Result is null");
+                    throw new JsonException("Failed to deserialize configuration");
+                }
+
+                // Validate configuration properties
+                if (string.IsNullOrEmpty(config.Email.SmtpHost))
+                    throw new InvalidOperationException("SMTP host is required");
+                if (config.Email.SmtpPort <= 0)
+                    throw new InvalidOperationException("SMTP port must be greater than 0");
+                if (string.IsNullOrEmpty(config.RulesConfigPath))
+                    throw new InvalidOperationException("Rules configuration path is required");
+
+                logger.LogInfo($"Configuration loaded from: {fullPath}");
+                return config;
+            }
+            catch (JsonException ex)
+            {
+                logger.LogError(ex, $"Failed to deserialize configuration from {configPath}");
+                return null;
+            }
+            catch (IOException ex)
+            {
+                logger.LogError(ex, $"Failed to read configuration file: {configPath}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Unexpected error loading configuration: {configPath}");
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The Avalonia application class.
+    /// </summary>
+    /// <remarks>
+    /// Initializes the Avalonia application and loads XAML resources for the GUI.
+    /// </remarks>
     public class App : Application
     {
+        /// <summary>
+        /// Initializes the application by loading XAML resources.
+        /// </summary>
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);

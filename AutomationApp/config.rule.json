@@ -1,23 +1,23 @@
-[
-  {
-    "type": "FileMoveRule",
-    "source": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Source",
-    "target": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/Target"
-  },
-  {
-    "type": "BulkEmailRule",
-    "csv": "C:/Users/USER/Desktop/Task-Automation-Tool/AutomationApp/recipients.csv"
-  },
-  {
-    "type": "DataProcessingRule",
-    "name": "ProcessProductData",
-    "filePath": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data.csv",
-    "requiredColumns": ["id", "name"]
-  },
-  {
-    "type": "DataProcessingRule",
-    "name": "ProcessProductDataExcel",
-    "filePath": "data.xlsx",
-    "requiredColumns": ["id", "name"]
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["type"],
+    "properties": {
+      "type": {
+        "type": "string",
+        "enum": ["filemoverule", "bulkemailrule", "dataprocessingrule"]
+      },
+      "name": { "type": "string" },
+      "source": { "type": "string" },
+      "target": { "type": "string" },
+      "supportedExtensions": { "type": "array", "items": { "type": "string" } },
+      "addTimestamp": { "type": "boolean" },
+      "backupFiles": { "type": "boolean" },
+      "csvPath": { "type": "string" },
+      "dataPath": { "type": "string" },
+      "requiredColumns": { "type": "array", "items": { "type": "string" } }
+    }
   }
-]
+}
