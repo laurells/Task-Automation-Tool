@@ -60,6 +60,9 @@ The project serves several purposes:
 - [MailKit Documentation](https://github.com/jstedfast/MailKit)
 - [.NET Documentation](https://learn.microsoft.com/en-us/dotnet/)
 
+## Video Link
+[Task Automation Tool Video](https://youtu.be/F0LU425Zvnc)
+
 ## Getting Started
 
 ### Prerequisites

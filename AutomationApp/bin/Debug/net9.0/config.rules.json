@@ -69,5 +69,17 @@
     "requiredColumns": [
       "CustomerName"
     ]
+  },
+  {
+    "type": "FileMoveRule",
+    "name": "movemyfiles",
+    "source": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\Source",
+    "target": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\Target",
+    "supportedExtensions": [
+      ".pdf",
+      ".txt"
+    ],
+    "addTimestamp": false,
+    "backupFiles": false
   }
 ]
