@@ -132,6 +132,11 @@ namespace AutomationApp.Services
             }
         }
 
+        public EmailConfiguration GetConfiguration()
+        {
+            return _config;
+        }
+
         /// <summary>
         /// Reads emails from the inbox.
         /// </summary>
@@ -221,7 +226,7 @@ namespace AutomationApp.Services
                     {
 
                         _logger.LogInfo($"Missing required header '{header}' in CSV: {csvPath}");
-                        
+
                         return false;
                     }
                 }

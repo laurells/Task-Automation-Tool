@@ -29,6 +29,13 @@ namespace AutomationApp.Interfaces
         Task<bool> SendEmailsFromCsvAsync(string csvPath);
 
         /// <summary>
+        /// Gets the email configuration.
+        /// </summary>
+        /// <returns>The email configuration used by the service.</returns>
+        EmailConfiguration GetConfiguration();
+
+
+        /// <summary>
         /// Sends bulk emails to multiple recipients.
         /// </summary>
         /// <param name="recipients">The list of recipients.</param>

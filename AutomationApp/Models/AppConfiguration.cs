@@ -34,7 +34,7 @@ namespace AutomationApp.Models
         /// <summary>
         /// Gets the path to the rules configuration file.
         /// </summary>
-        public string RulesConfigPath { get; init; } = "config.rule.json";
+        public string RulesConfigPath { get; init; } = "config.rules.json";
 
         public AppConfiguration(string rulesConfigPath, EmailConfiguration email, LoggingConfiguration logging)
         {

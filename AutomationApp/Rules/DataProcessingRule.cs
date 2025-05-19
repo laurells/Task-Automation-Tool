@@ -64,56 +64,32 @@ namespace AutomationApp.Rules
         /// Returns false if the rule is disabled, the file is empty, or an error occurs.
         /// </remarks>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null.</exception>
-        public async Task<bool> ExecuteAsync(Logger logger)
+        public async Task<bool> ExecuteAsync(Logger? logger = null)
         {
-            // Validate logger
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            // Check if rule is disabled
-            if (!Enabled)
-            {
-                logger.LogInfo($"Rule '{RuleName}' is disabled. Skipping execution.");
-                return true; // Disabled rules are considered successful
-            }
-
-            // Log start of execution
-            logger.LogInfo($"Executing DataProcessingRule '{RuleName}' with file: {_filePath}");
+            var log = logger ?? _logger;
+            log.LogInfo($"Executing DataProcessingRule '{RuleName}' with file: {_filePath}");
 
             try
             {
-                // Validate file existence
-                if (!System.IO.File.Exists(_filePath))
+                var records = await _dataService.ParseDataFileAsync(_filePath, _requiredColumns, (Logger)log);
+                if (records == null || !records.Any())
                 {
-                    logger.LogInfo($"Data file not found: {_filePath}");
+                    log.LogWarning($"No valid records found in file: {_filePath}");
                     return false;
                 }
 
-                // Parse data file
-                var records = await _dataService.ParseDataFileAsync(_filePath, _requiredColumns, logger);
-                if (records == null || records.Count == 0)
-                {
-                    logger.LogWarning($"No records found in file: {_filePath}");
-                    return false;
-                }
-
-                // Process and log each record
+                // Log each record
                 foreach (var record in records)
                 {
-                    var fields = string.Join(", ", record.Fields.Select(f => $"{f.Key}: {f.Value}"));
-                    logger.LogInfo($"Processed record: {fields}");
+                    var rowData = string.Join(", ", record.Fields.Select(kv => $"{kv.Key}: {kv.Value}"));
+                    log.LogInfo($"Record: {rowData}");
                 }
 
-                // Log completion
-                logger.LogSuccess($"DataProcessingRule '{RuleName}' completed successfully. Processed {records.Count} records.");
                 return true;
             }
             catch (Exception ex)
             {
-                // Log error and return failure
-                logger.LogError(ex, $"Failed to execute DataProcessingRule '{RuleName}'");
+                log.LogError(ex, $"Failed to execute DataProcessingRule '{RuleName}'");
                 return false;
             }
         }

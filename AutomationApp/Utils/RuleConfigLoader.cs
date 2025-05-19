@@ -22,6 +22,8 @@ namespace AutomationApp.Utils
     /// </remarks>
     public static class RuleConfigLoader
     {
+        private static EmailConfiguration? _emailConfig;
+
         /// <summary>
         /// Asynchronously loads automation rules from a JSON file and initializes an <see cref="AutomationEngine"/>.
         /// </summary>
@@ -29,18 +31,13 @@ namespace AutomationApp.Utils
         /// <param name="filePath">The path to the rules configuration file. Defaults to "config.rules.json".</param>
         /// <param name="fileService">The file service for file operations. If null, a new instance is created.</param>
         /// <param name="dataService">The data service for data processing. If null, a new instance is created.</param>
-        /// <param name="emailService">The email service for email rules. If null, a new instance is created.</param>
+        /// <param name="emailService">The email service for email rules. Cannot be null.</param>
         /// <returns>A task that resolves to the initialized <see cref="AutomationEngine"/> with registered rules.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="loggingConfig"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="loggingConfig"/> or <paramref name="emailService"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is null or empty.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the configuration file does not exist.</exception>
         /// <exception cref="InvalidOperationException">Thrown when JSON deserialization fails.</exception>
         /// <exception cref="IOException">Thrown when reading the file fails.</exception>
-        /// <remarks>
-        /// Loads rules from the specified JSON file, deserializes them into <see cref="RuleConfig"/> objects,
-        /// and registers corresponding rules in the <see cref="AutomationEngine"/>. Logs errors using the provided
-        /// <see cref="ILoggerService"/>. Skips email-related rules if <see cref="EmailConfig"/> loading fails.
-        /// </remarks>
         public static async Task<AutomationEngine> LoadRulesAsync(
             LoggingConfiguration loggingConfig,
             string filePath = "config.rules.json",
@@ -53,6 +50,8 @@ namespace AutomationApp.Utils
                 throw new ArgumentNullException(nameof(loggingConfig));
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
+            if (emailService == null)
+                throw new ArgumentNullException(nameof(emailService));
 
             // Initialize logger and engine
             var logger = new Logger("RuleConfigLoader", loggingConfig);
@@ -62,44 +61,37 @@ namespace AutomationApp.Utils
             fileService ??= new FileService(logger);
             dataService ??= new DataService(logger);
 
-            // Load EmailConfig
-            EmailConfiguration? emailConfiguration = null;
-            try
+            // Load EmailConfig if not already loaded
+            if (_emailConfig == null)
             {
-                var emailConfig = await Helpers.LoadEmailConfig(logger, "emailsettings.json");
-                emailConfiguration = new EmailConfiguration
+                try
                 {
-                    SmtpHost = emailConfig.SmtpHost ?? "smtp.example.com",
-                    SmtpPort = emailConfig.SmtpPort,
-                    UseSmtpSsl = emailConfig.UseSmtpSsl,
-                    Email = emailConfig.Email ?? string.Empty,
-                    Password = emailConfig.Password ?? string.Empty,
-                    ImapHost = emailConfig.ImapHost ?? "imap.example.com",
-                    ImapPort = emailConfig.ImapPort,
-                    UseImapSsl = emailConfig.UseImapSsl
-                };
-                logger.LogInfo("Successfully loaded EmailConfiguration");
+                    var emailConfig = await Helpers.LoadEmailConfig(logger, "emailsettings.json");
+                    _emailConfig = new EmailConfiguration
+                    {
+                        SmtpHost = emailConfig.SmtpHost ?? "smtp.example.com",
+                        SmtpPort = emailConfig.SmtpPort,
+                        UseSmtpSsl = emailConfig.UseSmtpSsl,
+                        Email = emailConfig.Email ?? string.Empty,
+                        Password = emailConfig.Password ?? string.Empty,
+                        ImapHost = emailConfig.ImapHost ?? "imap.example.com",
+                        ImapPort = emailConfig.ImapPort,
+                        UseImapSsl = emailConfig.UseImapSsl
+                    };
+                    logger.LogInfo("Successfully loaded EmailConfiguration");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to load EmailConfig. Skipping email-related rules.");
+                    _emailConfig = null;
+                }
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to load EmailConfig. Skipping email-related rules.");
-            }
-
-            // Validate email configuration
-            bool isEmailConfigValid = emailConfiguration != null &&
-                                     !string.IsNullOrEmpty(emailConfiguration.SmtpHost) &&
-                                     !string.IsNullOrEmpty(emailConfiguration.Email) &&
-                                     !string.IsNullOrEmpty(emailConfiguration.Password);
-
-            // Initialize email service
-            emailService ??= isEmailConfigValid
-                ? new EmailService(emailConfiguration, logger)
-                : new EmailService(new EmailConfiguration(), logger);
 
             try
             {
                 // Resolve configuration file path
                 var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filePath);
+                logger.LogInfo($"Loading rules configuration from: {configPath}");
                 if (!File.Exists(configPath))
                 {
                     logger.LogWarning($"Rules configuration file not found: {configPath}");
@@ -108,6 +100,7 @@ namespace AutomationApp.Utils
 
                 // Read JSON file asynchronously
                 var json = await File.ReadAllTextAsync(configPath);
+                logger.LogDebug($"Rules configuration content: {json}");
 
                 // Deserialize JSON to rule configurations
                 var ruleConfigs = JsonSerializer.Deserialize<List<RuleConfig>>(json, new JsonSerializerOptions
@@ -195,12 +188,6 @@ namespace AutomationApp.Utils
                                 break;
 
                             case "bulkemailrule":
-                                // Skip if email configuration is invalid
-                                if (!isEmailConfigValid || emailConfiguration == null)
-                                {
-                                    logger.LogWarning($"Skipping BulkEmailRule '{ruleName}' due to invalid EmailConfiguration");
-                                    continue;
-                                }
                                 // Validate BulkEmailRule properties
                                 if (string.IsNullOrEmpty(config.CsvPath))
                                 {
@@ -213,42 +200,49 @@ namespace AutomationApp.Utils
                                     continue;
                                 }
 
+                                // Skip if email configuration is invalid
+                                if (_emailConfig == null)
+                                {
+                                    logger.LogWarning($"Skipping BulkEmailRule '{ruleName}' due to invalid EmailConfiguration");
+                                    continue;
+                                }
+
                                 engine.RegisterRule(new BulkEmailRule(
                                     emailService,
                                     dataService,
-                                    emailConfiguration,
+                                    _emailConfig,
                                     config.CsvPath,
                                     ruleName));
-                                logger.LogInfo($"Registered BulkEmailRule: {ruleName} (csv: {config.CsvPath})");
+                                logger.LogInfo($"Registered BulkEmailRule: {ruleName} (csvPath: {config.CsvPath})");
                                 break;
 
                             case "dataprocessingrule":
                                 // Validate DataProcessingRule properties
-                                if (string.IsNullOrEmpty(config.DataPath))
+                                var ruleFilePath = config.FilePath ?? config.Settings?.DataPath;
+                                if (string.IsNullOrEmpty(ruleFilePath))
                                 {
-                                    logger.LogWarning($"Skipping DataProcessingRule '{ruleName}' with missing or invalid 'dataPath'");
+                                    logger.LogWarning($"Skipping DataProcessingRule '{ruleName}' with missing or invalid file path");
                                     continue;
                                 }
-                                if (!File.Exists(config.DataPath))
+                                if (!File.Exists(ruleFilePath))
                                 {
-                                    logger.LogWarning($"Data file not found for DataProcessingRule '{ruleName}': {config.DataPath}");
+                                    logger.LogWarning($"Data file not found for DataProcessingRule '{ruleName}': {ruleFilePath}");
                                     continue;
                                 }
-
-                                var requiredColumns = config.RequiredColumns ?? Array.Empty<string>();
+                                var requiredColumns = config.RequiredColumns ?? config.Settings?.RequiredColumns ?? Array.Empty<string>();
 
                                 engine.RegisterRule(new DataProcessingRule(
                                     dataService,
-                                    config.DataPath,
+                                    ruleFilePath,
                                     requiredColumns,
                                     logger,
                                     ruleName));
-                                logger.LogInfo($"Registered DataProcessingRule: {ruleName} (data: {config.DataPath})");
+                                logger.LogInfo($"Registered DataProcessingRule: {ruleName} (filePath: {ruleFilePath})");
                                 break;
 
                             default:
-                                logger.LogWarning($"Unknown rule type for rule '{ruleName}': {type}");
-                                break;
+                                logger.LogWarning($"Skipping unknown rule type: {type}");
+                                continue;
                         }
                     }
                     catch (Exception ex)
@@ -273,10 +267,7 @@ namespace AutomationApp.Utils
                 throw new InvalidOperationException($"Unexpected error loading rules from {filePath}: {ex.Message}", ex);
             }
 
-            //logger.LogInfo($"Loaded {usedRuleNames.Count} rules into AutomationEngine");
             return engine;
         }
-
-
     }
 }

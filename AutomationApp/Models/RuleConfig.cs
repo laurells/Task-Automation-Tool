@@ -58,6 +58,60 @@ namespace AutomationApp.Models
         /// <summary>
         /// Gets or sets the data file path for DataProcessingRule.
         /// </summary>
+        [JsonPropertyName("filePath")]
+        public string? FilePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required columns for DataProcessingRule.
+        /// </summary>
+        [JsonPropertyName("requiredColumns")]
+        public string[]? RequiredColumns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the nested settings object for rules that use it.
+        /// </summary>
+        [JsonPropertyName("settings")]
+        public RuleSettings? Settings { get; set; }
+    }
+
+    /// <summary>
+    /// Represents nested settings for rules that use them.
+    /// </summary>
+    public class RuleSettings
+    {
+        /// <summary>
+        /// Gets or sets the source path for the rule.
+        /// </summary>
+        [JsonPropertyName("sourcePath")]
+        public string? SourcePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the target path for the rule.
+        /// </summary>
+        [JsonPropertyName("targetPath")]
+        public string? TargetPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the supported file extensions for the rule.
+        /// </summary>
+        [JsonPropertyName("supportedExtensions")]
+        public string[]? SupportedExtensions { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to add a timestamp to moved files.
+        /// </summary>
+        [JsonPropertyName("addTimestamp")]
+        public bool AddTimestamp { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to backup files.
+        /// </summary>
+        [JsonPropertyName("backupFiles")]
+        public bool BackupFiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data file path for DataProcessingRule.
+        /// </summary>
         [JsonPropertyName("dataPath")]
         public string? DataPath { get; set; }
 

@@ -11,11 +11,6 @@
     "backupFiles": true
   },
   {
-    "type": "DataProcessingRule",
-    "name": "ProcessingDataFromCSV_automation",
-    "csvPath": "C:\\\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data.csv"
-  },
-  {
     "type": "FileMoveRule",
     "name": "Movefiletotarget",
     "source": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp",
@@ -25,5 +20,54 @@
     ],
     "addTimestamp": false,
     "backupFiles": false
+  },
+  {
+    "type": "DataProcessingRule",
+    "name": "processmydata",
+    "filePath": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data.csv",
+    "requiredColumns": [
+      "ID",
+      "Name",
+      "Price"
+    ]
+  },
+  {
+    "type": "DataProcessingRule",
+    "name": "processdata",
+    "filePath": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data.csv",
+    "requiredColumns": [
+      "ID",
+      "Name",
+      "Price"
+    ]
+  },
+  {
+    "type": "DataProcessingRule",
+    "name": "mydataprocess",
+    "filePath": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data.csv",
+    "requiredColumns": [
+      "name"
+    ]
+  },
+  {
+    "type": "DataProcessingRule",
+    "name": "processmydata",
+    "enabled": true,
+    "settings": {
+      "dataPath": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data\\testdata.csv",
+      "requiredColumns": [
+        "CustomerName",
+        "OrderDate",
+        "Amount"
+      ]
+    }
+  },
+  {
+    "type": "DataProcessingRule",
+    "name": "processtestdata",
+    "filePath": "C:\\Users\\USER\\Desktop\\Task-Automation-Tool\\AutomationApp\\data\\testdata.csv",
+    "requiredColumns": [
+      "CustomerName"
+    ]
   }
 ]

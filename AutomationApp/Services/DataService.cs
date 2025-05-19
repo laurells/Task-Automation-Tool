@@ -99,7 +99,18 @@ namespace AutomationApp.Services
             {
                 if (extension == ".csv")
                 {
-                    return await ParseCsvAsync(filePath, requiredColumns, logger);
+                    var (headers, rows) = await ParseCsvAsync(filePath, requiredColumns, logger);
+                    var records = new List<DataRecord>();
+                    foreach (var row in rows)
+                    {
+                        var record = new DataRecord();
+                        foreach (var header in headers)
+                        {
+                            record.Fields[header] = row[header];
+                        }
+                        records.Add(record);
+                    }
+                    return records;
                 }
                 else if (extension == ".xlsx" || extension == ".xls")
                 {
@@ -394,75 +405,82 @@ namespace AutomationApp.Services
         /// <param name="logger">The logger for recording details.</param>
         /// <returns>A task that resolves to a list of data records.</returns>
         /// <exception cref="InvalidOperationException">Thrown when required columns are missing or no valid records are found.</exception>
-        private async Task<List<DataRecord>> ParseCsvAsync(string filePath, string[] requiredColumns, Logger logger)
+        public async Task<(string[] Headers, List<Dictionary<string, string>> Rows)> ParseCsvAsync(string filePath, string[] requiredColumns, Logger logger)
         {
-            // Configure CSV reader
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            if (string.IsNullOrEmpty(filePath))
+                throw new ArgumentNullException(nameof(filePath));
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"CSV file not found: {filePath}", filePath);
+
+            var headers = Array.Empty<string>();
+            var rows = new List<Dictionary<string, string>>();
+
+            try
             {
-                HeaderValidated = null,
-                MissingFieldFound = null,
-                TrimOptions = TrimOptions.Trim
-            };
-
-            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
-            using var reader = new StreamReader(stream);
-            using var csv = new CsvReader(reader, config);
-
-            var records = new List<DataRecord>();
-            await csv.ReadAsync();
-            csv.ReadHeader();
-            var headers = csv.HeaderRecord?.Select(h => h.ToLowerInvariant()).ToList() ?? [];
-
-            // Validate required columns
-            foreach (var col in requiredColumns)
-            {
-                if (!headers.Contains(col.ToLowerInvariant()))
+                using var reader = new StreamReader(filePath);
+                string? headerLine = await reader.ReadLineAsync();
+                if (string.IsNullOrEmpty(headerLine))
                 {
-                    logger.LogInfo($"Required column '{col}' not found in CSV: {filePath}");
-                    throw new InvalidOperationException($"Required column '{col}' not found");
+                    logger.LogWarning($"CSV file is empty or has no header: {filePath}");
+                    return (headers, rows);
                 }
-            }
 
-            // Parse records
-            while (await csv.ReadAsync())
-            {
-                try
+                headers = headerLine.Split(',').Select(h => h.Trim()).ToArray();
+                logger.LogInfo($"Parsed headers: {string.Join(", ", headers)}");
+
+                int rowIndex = 1;
+                while (!reader.EndOfStream)
                 {
-                    var record = new DataRecord();
-                    foreach (var header in headers)
+                    rowIndex++;
+                    string? line = await reader.ReadLineAsync();
+                    if (string.IsNullOrEmpty(line))
+                        continue;
+
+                    var values = line.Split(',').Select(v => v.Trim()).ToArray();
+                    if (values.Length != headers.Length)
                     {
-                        record.Fields[header] = csv.GetField(header) ?? string.Empty;
+                        logger.LogWarning($"Skipping row {rowIndex} with incorrect column count: {line}");
+                        continue;
                     }
 
-                    bool isValid = true;
-                    foreach (var col in requiredColumns)
+                    var row = new Dictionary<string, string>();
+                    for (int i = 0; i < headers.Length; i++)
                     {
-                        if (string.IsNullOrWhiteSpace(record.GetField(col)))
+                        row[headers[i]] = values[i];
+                    }
+                    rows.Add(row);
+
+                    // Optional validation for required columns
+                    if (requiredColumns?.Length > 0)
+                    {
+                        foreach (var column in requiredColumns)
                         {
-                            logger.LogWarning($"Missing required field '{col}' in row {csv.Context.Parser.Row} of {filePath}");
-                            isValid = false;
-                            break;
+                            if (!row.ContainsKey(column) || string.IsNullOrEmpty(row[column]))
+                            {
+                                logger.LogWarning($"Missing or empty required field '{column}' in row {rowIndex} of {filePath}");
+                            }
                         }
                     }
-
-                    if (isValid)
-                        records.Add(record);
                 }
-                catch (Exception ex)
+
+                if (rows.Count == 0)
                 {
-                    logger.LogError(ex, $"Skipping invalid row {csv.Context.Parser.Row} in {filePath}");
+                    logger.LogInfo($"No data rows found in CSV: {filePath}");
                 }
-            }
+                else
+                {
+                    logger.LogInfo($"Parsed {rows.Count} data rows from CSV: {filePath}");
+                }
 
-            if (!records.Any())
+                return (headers, rows);
+            }
+            catch (Exception ex)
             {
-                logger.LogInfo($"No valid records found in CSV: {filePath}");
-                throw new InvalidOperationException("No valid records found in CSV file");
+                logger.LogError(ex, $"Failed to parse CSV file: {filePath}");
+                throw;
             }
-
-            logger.LogInfo($"Parsed {records.Count} valid records from CSV: {filePath}");
-            return records;
         }
+
 
         /// <summary>
         /// Parses an Excel file into a list of data records asynchronously.

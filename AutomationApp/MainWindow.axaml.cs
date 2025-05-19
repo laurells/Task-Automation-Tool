@@ -26,8 +26,8 @@ namespace AutomationApp
     /// </remarks>
     public partial class MainWindow : Window
     {
-        private readonly AutomationEngine _engine;          // Engine for managing automation rules
-        private readonly ILoggerService _logger;            // Logger for operation details
+        private AutomationEngine? _engine;          // Engine for managing automation rules
+        private ILoggerService _logger;            // Logger for operation details
         private readonly AppConfiguration _appConfig;       // Application configuration settings
 
         /// <summary>
@@ -301,8 +301,7 @@ namespace AutomationApp
             {
                 Type = "dataprocessingrule",
                 Name = ruleName,
-                DataPath = filePath,
-                RequiredColumns = requiredColumns
+                
             };
         }
     }

@@ -48,6 +48,9 @@ namespace AutomationApp.Cli
                     case "validate-rules":
                         ValidateRules();
                         break;
+                    // case "delete-rule":
+                    //     await DeleteRuleCommand(args);
+                    //     break;
                     case "help":
                     default:
                         ShowHelp();
@@ -63,16 +66,17 @@ namespace AutomationApp.Cli
 
         private void ShowHelp()
         {
-            _logger.LogInfo("Task Automation Tool - Command Line Interface");
-            _logger.LogInfo("Available commands:");
-            _logger.LogInfo("  run          - Execute all automation rules once");
-            _logger.LogInfo("  schedule     - Start scheduled execution of rules");
-            _logger.LogInfo("  test         - Test specific rules");
-            _logger.LogInfo("  status       - Show current status and statistics");
-            _logger.LogInfo("  configure    - Configure new rules");
-            _logger.LogInfo("  list-rules   - List all configured rules");
-            _logger.LogInfo("  validate-rules - Validate all configured rules");
-            _logger.LogInfo("  help         - Show this help message");
+            Console.WriteLine("Task Automation Tool CLI Commands:");
+            Console.WriteLine();
+            Console.WriteLine("run - Execute all enabled rules");
+            Console.WriteLine("schedule <interval> <unit> - Set scheduling interval (e.g., 'schedule 1 hour', 'schedule 30 minute')");
+            Console.WriteLine("test - Test all rules without executing");
+            Console.WriteLine("status - Show current status of rules");
+            Console.WriteLine("configure - Open configuration interface");
+            Console.WriteLine("list-rules - List all available rules");
+            Console.WriteLine("validate-rules - Validate rule configurations");
+            Console.WriteLine("delete-rule <rule-name> - Delete a rule by name");
+            Console.WriteLine("help - Show this help message");
             _logger.LogInfo("");
             _logger.LogInfo("Examples:");
             _logger.LogInfo("  automation.exe run");
@@ -166,8 +170,15 @@ namespace AutomationApp.Cli
                 _logger.LogInfo($"Testing rule: {rule.RuleName}");
                 try
                 {
-                    await rule.ExecuteAsync(logger: _logger);
-                    _logger.LogInfo($"Rule test completed successfully: {rule.RuleName}");
+                    var success = await rule.ExecuteAsync(logger: _logger);
+                    if (success)
+                    {
+                        _logger.LogInfo($"Rule test completed successfully: {rule.RuleName}");
+                    }
+                    else
+                    {
+                        _logger.LogError(null, $"Rule test failed: {rule.RuleName}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -315,7 +326,7 @@ namespace AutomationApp.Cli
             }
 
             _logger.LogInfo("Enter CSV file path (e.g., recipients.csv):");
-            var csvPath = Console.ReadLine()?.Trim();
+            var csvPath = Path.GetFullPath(Console.ReadLine()?.Trim() ?? "");
             if (string.IsNullOrEmpty(csvPath) || !File.Exists(csvPath))
             {
                 _logger.LogWarning("CSV file path is invalid or file does not exist.");
@@ -345,7 +356,7 @@ namespace AutomationApp.Cli
             }
 
             _logger.LogInfo("Enter file path (e.g., data.csv or data.xlsx):");
-            var filePath = Console.ReadLine()?.Trim();
+            var filePath = Path.GetFullPath(Console.ReadLine()?.Trim() ?? "");
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
                 _logger.LogWarning("File path is invalid or file does not exist.");
@@ -358,7 +369,7 @@ namespace AutomationApp.Cli
                 ? Array.Empty<string>()
                 : columnsInput.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToArray();
 
-            if (!requiredColumns.Any())
+            if (requiredColumns.Length <= 0)
             {
                 _logger.LogWarning("At least one required column must be specified.");
                 return;
